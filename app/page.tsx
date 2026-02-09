@@ -57,10 +57,10 @@ export default function HomePage() {
       </section>
       <CategoryGrid />
       <FeaturedProducts />
-      <RecommendedTyres
-      title="Bästsäljande däck"
-      products={ALL_PRODUCTS.slice(0, 8)}
-    />
+  <RecommendedTyres
+  title="Bästsäljande däck"
+  limit={8}
+/>
 
       <Footer />
     </div>

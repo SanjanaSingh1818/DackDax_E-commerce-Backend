@@ -1,0 +1,3 @@
+module.exports=[37014,a=>{"use strict";var b=a.i(12157);function c(){return(0,b.jsxs)("div",{children:[(0,b.jsx)("h1",{className:"text-2xl font-bold mb-6",children:"Dashboard"}),(0,b.jsxs)("div",{className:"grid grid-cols-3 gap-6",children:[(0,b.jsx)(d,{title:"Products",value:"1120"}),(0,b.jsx)(d,{title:"Orders",value:"320"}),(0,b.jsx)(d,{title:"Revenue",value:"120,000 kr"})]})]})}function d({title:a,value:c}){return(0,b.jsxs)("div",{className:"bg-white p-6 rounded-xl shadow",children:[(0,b.jsx)("h2",{className:"text-gray-500",children:a}),(0,b.jsx)("p",{className:"text-2xl font-bold mt-2",children:c})]})}a.s(["default",()=>c])}];
+
+//# sourceMappingURL=Downloads_tyre-e-commerce-frontend_app_admin_page_tsx_0d52119f._.js.map

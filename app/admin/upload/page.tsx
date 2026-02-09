@@ -1,44 +1,55 @@
 "use client"
 
+import { useState } from "react"
+
 export default function UploadPage(){
 
-  const handleUpload = (e:any)=>{
+  const [loading,setLoading] = useState(false)
+  const [message,setMessage] = useState<string | null>(null)
 
-    const file = e.target.files[0]
+  const handleUpload = async (e:any)=>{
 
-    const reader = new FileReader()
+    const file = e.target.files?.[0]
+    if(!file) return
 
-    reader.onload = ()=>{
+    setLoading(true)
+    setMessage(null)
 
-      const csv = reader.result as string
+    try{
 
-      const rows = csv.split("\n")
+      const token = localStorage.getItem("token")
+      if(!token){
+        setMessage("Please login as admin first.")
+        return
+      }
 
-      const products = rows.map(row=>{
+      const form = new FormData()
+      form.append("file", file)
 
-        const cols = row.split(",")
-
-        return {
-
-          id: Date.now()+Math.random(),
-
-          brand: cols[0],
-
-          title: cols[1],
-
-          price: cols[2]
-
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/products/upload`,
+        {
+          method:"POST",
+          headers:{
+            Authorization:`Bearer ${token}`
+          },
+          body: form
         }
+      )
 
-      })
+      if(!res.ok){
+        const err = await res.text()
+        throw new Error(err || "Upload failed")
+      }
 
-      localStorage.setItem("products",JSON.stringify(products))
+      const data = await res.json()
+      setMessage(`Upload complete. Inserted: ${data.inserted ?? 0}`)
 
-      alert("CSV uploaded")
-
+    }catch(err:any){
+      setMessage(err.message || "Upload failed")
+    }finally{
+      setLoading(false)
     }
-
-    reader.readAsText(file)
 
   }
 
@@ -51,6 +62,18 @@ export default function UploadPage(){
       </h1>
 
       <input type="file" accept=".csv" onChange={handleUpload}/>
+
+      {loading && (
+        <div className="text-gray-500 mt-3">
+          Uploading...
+        </div>
+      )}
+
+      {message && (
+        <div className="mt-3">
+          {message}
+        </div>
+      )}
 
     </div>
 

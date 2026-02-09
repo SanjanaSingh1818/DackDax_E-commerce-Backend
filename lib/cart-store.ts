@@ -2,119 +2,257 @@
 
 import { create } from "zustand"
 import { persist, createJSONStorage } from "zustand/middleware"
+import { cartAPI } from "@/lib/api"
 
 export interface CartItem {
-  id: string
-  title: string
-  price: number
-  image: string
-  quantity: number
+
+  id:string
+  title:string
+  price:number
+  image:string
+  quantity:number
+
 }
 
 interface CartStore {
 
-  items: CartItem[]
+  items:CartItem[]
 
-  addItem: (product: Omit<CartItem, "quantity">) => void
-  removeItem: (id: string) => void
+  setCart:(items:CartItem[])=>void
 
-  increaseQty: (id: string) => void
-  decreaseQty: (id: string) => void
+  addItem:(product:Omit<CartItem,"quantity">)=>Promise<void>
 
-  clearCart: () => void
+  increaseQty:(id:string)=>Promise<void>
 
-  getCount: () => number
-  getTotal: () => number
+  decreaseQty:(id:string)=>Promise<void>
+
+  removeItem:(id:string)=>Promise<void>
+
+  clearCart:()=>Promise<void>
+
+  getCount:()=>number
+
+  getTotal:()=>number
+
+  normalizeId:(value:any)=>string
 
 }
 
 export const useCartStore = create<CartStore>()(
 
-  persist(
+persist(
 
-    (set, get) => ({
+(set,get)=>({
 
-      items: [],
+items:[],
 
-      addItem: (product) => {
+normalizeId:(value:any)=>{
+  if(value===undefined||value===null) return ""
+  const str=String(value).trim()
+  if(!str||str==="undefined"||str==="null") return ""
+  return str
+},
 
-        const items = get().items
-        const existing = items.find(item => item.id === product.id)
 
-        if (existing) {
+setCart:(items)=>set({items}),
 
-          set({
-            items: items.map(item =>
-              item.id === product.id
-                ? { ...item, quantity: item.quantity + 1 }
-                : item
-            )
-          })
 
-        } else {
+addItem:async(product)=>{
 
-          set({
-            items: [
-              ...items,
-              {
-                ...product,
-                quantity: 1
-              }
-            ]
-          })
+const token = localStorage.getItem("token")
+const id = (get() as any).normalizeId(product.id)
+if(!id){
+  console.error("Add to cart blocked: missing product.id", product)
+  return
+}
 
-        }
+const items=get().items
 
-      },
+const existing=items.find(i=>i.id===id)
 
-      removeItem: (id) =>
-        set({
-          items: get().items.filter(item => item.id !== id)
-        }),
+if(existing){
 
-      increaseQty: (id) =>
-        set({
-          items: get().items.map(item =>
-            item.id === id
-              ? { ...item, quantity: item.quantity + 1 }
-              : item
-          )
-        }),
+set({
 
-      decreaseQty: (id) =>
-        set({
-          items: get().items
-            .map(item =>
-              item.id === id
-                ? { ...item, quantity: item.quantity - 1 }
-                : item
-            )
-            .filter(item => item.quantity > 0)
-        }),
+items:items.map(i=>
+i.id===id
+?{...i,quantity:i.quantity+1}
+:i
+)
 
-      clearCart: () => set({ items: [] }),
+})
 
-      getCount: () =>
-        get().items.reduce(
-          (total, item) => total + item.quantity,
-          0
-        ),
+if(token){
 
-      getTotal: () =>
-        get().items.reduce(
-          (total, item) => total + item.price * item.quantity,
-          0
-        ),
+await cartAPI.update(
+id,
+existing.quantity+1,
+token
+)
 
-    }),
+}
 
-    {
-      name: "dackdax-cart", // localStorage key
+}
 
-      storage: createJSONStorage(() => localStorage),
+else{
 
-    }
+set({
 
-  )
+items:[
+...items,
+{...product,id,quantity:1}
+]
+
+})
+
+if(token){
+
+await cartAPI.add({
+
+productId:id,
+quantity:1
+
+},token)
+
+}
+
+}
+
+},
+
+
+increaseQty:async(id)=>{
+
+const token=localStorage.getItem("token")
+const safeId = (get() as any).normalizeId(id)
+if(!safeId) return
+
+const item=get().items.find(i=>i.id===safeId)
+
+if(!item)return
+
+set({
+
+items:get().items.map(i=>
+i.id===safeId
+?{...i,quantity:i.quantity+1}
+:i
+)
+
+})
+
+if(token){
+
+await cartAPI.update(
+safeId,
+item.quantity+1,
+token
+)
+
+}
+
+},
+
+
+decreaseQty:async(id)=>{
+
+const token=localStorage.getItem("token")
+const safeId = (get() as any).normalizeId(id)
+if(!safeId) return
+
+const item=get().items.find(i=>i.id===safeId)
+
+if(!item)return
+
+if(item.quantity===1){
+
+get().removeItem(safeId)
+
+return
+
+}
+
+set({
+
+items:get().items.map(i=>
+i.id===safeId
+?{...i,quantity:i.quantity-1}
+:i
+)
+
+})
+
+if(token){
+
+await cartAPI.update(
+safeId,
+item.quantity-1,
+token
+)
+
+}
+
+},
+
+
+removeItem:async(id)=>{
+
+const token=localStorage.getItem("token")
+const safeId = (get() as any).normalizeId(id)
+if(!safeId) return
+
+set({
+
+items:get().items.filter(i=>i.id!==safeId)
+
+})
+
+if(token){
+
+await cartAPI.remove(safeId,token)
+
+}
+
+},
+
+
+clearCart:async()=>{
+
+const token=localStorage.getItem("token")
+
+const items=get().items
+
+set({items:[]})
+
+if(token){
+
+for(const item of items){
+
+const safeId = (get() as any).normalizeId(item.id)
+if(!safeId) continue
+await cartAPI.remove(safeId,token)
+
+}
+
+}
+
+},
+
+
+getCount:()=>get().items.reduce((t,i)=>t+i.quantity,0),
+
+getTotal:()=>get().items.reduce((t,i)=>t+i.price*i.quantity,0)
+
+}),
+
+{
+
+name:"dackdax-cart",
+
+storage:createJSONStorage(()=>localStorage)
+
+}
+
+)
 
 )

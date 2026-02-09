@@ -9,6 +9,8 @@ import { Input } from "@/components/ui/input"
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 
+import { orderAPI, paymentAPI } from "@/lib/api"
+
 export default function CheckoutPage() {
 
   const router = useRouter()
@@ -28,6 +30,7 @@ export default function CheckoutPage() {
     postalCode: ""
   })
 
+
   const handleChange = (e:any) => {
 
     setForm({
@@ -37,83 +40,112 @@ export default function CheckoutPage() {
 
   }
 
-  // SAFE function to save order
-  const saveOrder = () => {
 
-    if(typeof window === "undefined") return
-
-    const order = {
-
-      id: Date.now(),
-
-      items,
-
-      total: subtotal,
-
-      customer: form,
-
-      date: new Date().toISOString(),
-
-      status: "Paid"
-
-    }
-
-    const existing = localStorage.getItem("orders")
-
-    const orders = existing ? JSON.parse(existing) : []
-
-    localStorage.setItem(
-      "orders",
-      JSON.stringify([...orders, order])
-    )
-
-  }
 
   const handlePayment = async () => {
 
-    try{
+    try {
 
       setLoading(true)
 
-      // Save order locally
-      saveOrder()
+      const token = localStorage.getItem("token")
 
-      // Stripe checkout
-      const res = await fetch("/api/payment/create-checkout-session", {
+      if (!token) {
 
-        method: "POST",
+        alert("Please login first")
 
-        headers: {
-          "Content-Type": "application/json"
-        },
+        router.push("/login")
 
-        body: JSON.stringify({
-          items,
-          customer: form
-        })
+        return
 
-      })
+      }
 
-      const data = await res.json()
 
-      // Optional: clear cart
+      /* =========================
+         STEP 1: CREATE ORDER
+      ========================== */
+
+      const orderPayload = {
+
+        items: items.map(item => ({
+          productId: item.id,
+          title: item.title,
+          price: item.price,
+          quantity: item.quantity,
+          image: item.image
+        })),
+
+        total: subtotal,
+
+        customer: form
+
+      }
+
+
+      const orderRes = await orderAPI.create(orderPayload, token)
+
+
+      console.log("Order created:", orderRes)
+
+
+
+      /* =========================
+         STEP 2: CREATE PAYMENT INTENT
+      ========================== */
+
+      const paymentRes = await paymentAPI.createIntent({
+
+        orderId: orderRes._id || orderRes.order?._id,
+
+        amount: subtotal,
+
+        currency: "sek"
+
+      }, token)
+
+
+      console.log("Payment intent:", paymentRes)
+
+
+
+      /* =========================
+         STEP 3: CLEAR CART
+      ========================== */
+
       clearCart()
 
-      // Redirect to Stripe
-      window.location.href = data.url
 
-    }catch(err){
+
+      /* =========================
+         STEP 4: REDIRECT TO STRIPE
+      ========================== */
+
+      if (paymentRes.url) {
+
+        window.location.href = paymentRes.url
+
+      } else {
+
+        alert("Payment intent created successfully")
+
+      }
+
+
+    } catch (err:any) {
 
       console.error(err)
-      alert("Payment failed")
 
-    }finally{
+      alert(err.message || "Payment failed")
+
+    } finally {
 
       setLoading(false)
 
     }
 
   }
+
+
 
   return (
 
@@ -122,7 +154,7 @@ export default function CheckoutPage() {
 
       <div className="max-w-6xl mx-auto px-4 py-10 grid md:grid-cols-2 gap-10">
 
-        {/* LEFT - SHIPPING FORM */}
+        {/* LEFT FORM */}
 
         <div>
 
@@ -178,7 +210,9 @@ export default function CheckoutPage() {
 
         </div>
 
-        {/* RIGHT - SUMMARY */}
+
+
+        {/* RIGHT SUMMARY */}
 
         <div>
 
@@ -191,7 +225,7 @@ export default function CheckoutPage() {
             <div key={item.id} className="flex justify-between mb-2">
 
               <span>
-                {item.title} x {item.quantity}
+                {item.title} × {item.quantity}
               </span>
 
               <span>
@@ -206,7 +240,7 @@ export default function CheckoutPage() {
 
           <div className="flex justify-between font-bold text-lg">
 
-            <span>Totalt</span>
+            <span>Total</span>
 
             <span className="text-[#D4AF37]">
               {subtotal} kr
@@ -214,16 +248,16 @@ export default function CheckoutPage() {
 
           </div>
 
+
           <Button
             onClick={handlePayment}
             disabled={loading || items.length === 0}
-            className="w-full mt-6 bg-[#D4AF37] text-black hover:bg-[#B8962E]"
+            className="w-full mt-6 bg-[#D4AF37]"
           >
 
             {loading
-              ? "Bearbetar..."
-              : "Betala nu"
-            }
+              ? "Processing..."
+              : "Pay Now"}
 
           </Button>
 
@@ -234,6 +268,7 @@ export default function CheckoutPage() {
       <Footer />
 
     </>
+
   )
 
 }

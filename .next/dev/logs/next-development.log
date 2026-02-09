@@ -1,0 +1,8 @@
+[00:00:13.801] Server  LOG     ✓ Ready in 11.7s
+[00:00:17.004] Server  LOG     ○ Compiling / ...
+[00:00:20.727] Server  WARN    
+[00:00:20.728] Server  WARN    warn "-" "The class `duration-[2000ms]` is ambiguous and matches multiple utilities."
+[00:00:20.728] Server  WARN    warn "-" "If this is content and not a class, replace it with `duration-&lsqb;2000ms&rsqb;` to silence this warning."
+[00:00:31.968] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:00:32.220] Browser LOG     Fetching: https://deckdex-backend-1.onrender.com/api/products?page=1&limit=4
+[00:00:32.220] Browser LOG     Fetching: https://deckdex-backend-1.onrender.com/api/products?page=1&limit=8

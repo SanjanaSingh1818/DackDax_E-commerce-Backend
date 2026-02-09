@@ -10,19 +10,25 @@ import {
   ArrowLeft
 } from "lucide-react"
 
+import { useEffect } from "react"
+
 import { useCartStore } from "@/lib/cart-store"
+import { cartAPI } from "@/lib/api"
+
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 
 import { RecommendedTyres } from "@/components/recommended-tyres"
-import { ALL_PRODUCTS } from "@/lib/data"
+
+
 
 export default function CartPage() {
 
   const {
     items,
+    setCart,
     increaseQty,
     decreaseQty,
     removeItem,
@@ -30,10 +36,185 @@ export default function CartPage() {
     getTotal
   } = useCartStore()
 
+
+  const token =
+    typeof window !== "undefined"
+      ? localStorage.getItem("token")
+      : null
+
+
+
+  /* =============================
+     LOAD CART FROM BACKEND
+  ============================== */
+
+useEffect(() => {
+
+  async function loadCart() {
+
+    if (!token) return
+
+    try {
+
+      const res =
+        await cartAPI.get(token)
+
+      if (res?.items?.length) {
+
+        const backendItems =
+          res.items.map((item:any) => {
+            const prod =
+              item.productId && typeof item.productId === "object"
+                ? item.productId
+                : item.product
+
+            return {
+              id:
+                prod?._id ||
+                prod?.id ||
+                item.productId ||
+                item.product?._id,
+
+              title:
+                item.title ||
+                prod?.title,
+
+              price:
+                item.price ||
+                prod?.price,
+
+              image:
+                item.image ||
+                prod?.image,
+
+              quantity:
+                item.quantity
+            }
+          })
+
+        setCart(backendItems)
+
+      }
+
+    }
+
+    catch (err) {
+
+      console.error(err)
+
+    }
+
+  }
+
+  loadCart()
+
+}, [token])
+
+
+
+
+  /* =============================
+     BACKEND SYNC FUNCTIONS
+  ============================== */
+
+  async function handleIncrease(item:any) {
+
+    increaseQty(item.id)
+
+    if (token) {
+
+      try {
+
+        await cartAPI.update(
+          item.id,
+          item.quantity + 1,
+          token
+        )
+
+      } catch {}
+
+    }
+
+  }
+
+
+  async function handleDecrease(item:any) {
+
+    decreaseQty(item.id)
+
+    if (token && item.quantity > 1) {
+
+      try {
+
+        await cartAPI.update(
+          item.id,
+          item.quantity - 1,
+          token
+        )
+
+      } catch {}
+
+    }
+
+  }
+
+
+  async function handleRemove(item:any) {
+
+    removeItem(item.id)
+
+    if (token) {
+
+      try {
+
+        await cartAPI.remove(
+          item.id,
+          token
+        )
+
+      } catch {}
+
+    }
+
+  }
+
+
+  async function handleClearCart() {
+
+    if (confirm("Töm hela varukorgen?")) {
+
+      clearCart()
+
+      if (token) {
+
+        try {
+
+          for (const item of items) {
+
+            await cartAPI.remove(item.id, token)
+
+          }
+
+        } catch {}
+
+      }
+
+    }
+
+  }
+
+
+
+  /* =============================
+     TOTALS
+  ============================== */
+
   const subtotal = getTotal()
   const shipping = subtotal > 0 ? 99 : 0
   const tax = Math.round(subtotal * 0.25)
   const total = subtotal + shipping + tax
+
+
 
   return (
 
@@ -43,6 +224,7 @@ export default function CartPage() {
       <div className="bg-[#F9FAFB] min-h-screen">
 
         <div className="max-w-7xl mx-auto px-4 py-6 sm:py-10">
+
 
           {/* Title */}
           <div className="flex items-center gap-3 mb-6">
@@ -54,6 +236,8 @@ export default function CartPage() {
             </h1>
 
           </div>
+
+
 
           {/* Empty cart */}
           {items.length === 0 && (
@@ -81,10 +265,13 @@ export default function CartPage() {
 
           )}
 
+
+
           {/* Cart Content */}
           {items.length > 0 && (
 
             <div className="grid lg:grid-cols-3 gap-6">
+
 
               {/* LEFT SIDE */}
               <div className="lg:col-span-2 space-y-4">
@@ -98,6 +285,7 @@ export default function CartPage() {
 
                     <div className="flex flex-col sm:flex-row gap-4">
 
+
                       {/* Image */}
                       <Image
                         src={item.image}
@@ -107,8 +295,10 @@ export default function CartPage() {
                         className="object-contain mx-auto sm:mx-0"
                       />
 
+
                       {/* Content */}
                       <div className="flex-1">
+
 
                         {/* Title and Remove */}
                         <div className="flex justify-between">
@@ -118,7 +308,7 @@ export default function CartPage() {
                           </h2>
 
                           <button
-                            onClick={() => removeItem(item.id)}
+                            onClick={() => handleRemove(item)}
                             className="text-gray-400 hover:text-red-500"
                           >
                             <Trash2 size={18}/>
@@ -126,9 +316,12 @@ export default function CartPage() {
 
                         </div>
 
+
                         <p className="text-sm text-gray-500 mt-1">
                           {item.price} kr / st
                         </p>
+
+
 
                         {/* Quantity + Total */}
                         <div className="flex items-center justify-between mt-4">
@@ -136,7 +329,7 @@ export default function CartPage() {
                           <div className="flex items-center border rounded-lg overflow-hidden">
 
                             <button
-                              onClick={() => decreaseQty(item.id)}
+                              onClick={() => handleDecrease(item)}
                               className="px-3 py-1 hover:bg-gray-100"
                             >
                               <Minus size={14}/>
@@ -147,7 +340,7 @@ export default function CartPage() {
                             </div>
 
                             <button
-                              onClick={() => increaseQty(item.id)}
+                              onClick={() => handleIncrease(item)}
                               className="px-3 py-1 hover:bg-gray-100"
                             >
                               <Plus size={14}/>
@@ -169,6 +362,8 @@ export default function CartPage() {
 
                 ))}
 
+
+
                 {/* Cart Actions */}
                 <div className="flex flex-col sm:flex-row gap-3 justify-between pt-4">
 
@@ -188,12 +383,7 @@ export default function CartPage() {
 
                     <Button
                       variant="destructive"
-                      onClick={() => {
-
-                        if(confirm("Töm hela varukorgen?"))
-                          clearCart()
-
-                      }}
+                      onClick={handleClearCart}
                     >
                       Töm varukorg
                     </Button>
@@ -201,9 +391,7 @@ export default function CartPage() {
                     <Link href="/checkout">
 
                       <Button className="bg-[#D4AF37] text-black hover:bg-[#B8962E]">
-
                         Gå till betalning
-
                       </Button>
 
                     </Link>
@@ -214,25 +402,11 @@ export default function CartPage() {
 
               </div>
 
+
+
               {/* RIGHT SIDE SUMMARY */}
               <div className="space-y-4">
 
-                {/* Coupon */}
-                <div className="bg-white border rounded-xl p-5">
-
-                  <h2 className="font-semibold mb-3">
-                    Rabattkod
-                  </h2>
-
-                  <Input placeholder="Ange kod"/>
-
-                  <Button className="w-full mt-3 bg-[#D4AF37] text-black hover:bg-[#B8962E]">
-                    Använd kod
-                  </Button>
-
-                </div>
-
-                {/* Summary */}
                 <div className="bg-white border rounded-xl p-5">
 
                   <h2 className="font-semibold mb-4">
@@ -251,16 +425,6 @@ export default function CartPage() {
                     bold
                   />
 
-                  <Link href="/checkout">
-
-                    <Button className="w-full mt-4 bg-[#D4AF37] text-black hover:bg-[#B8962E]">
-
-                      Gå till betalning
-
-                    </Button>
-
-                  </Link>
-
                 </div>
 
               </div>
@@ -269,46 +433,21 @@ export default function CartPage() {
 
           )}
 
+
+
           {/* Recommended Tyres */}
-          <RecommendedTyres
-            title="Du kanske också gillar"
-            products={ALL_PRODUCTS.slice(0,4)}
-          />
+          {items.length > 0 && (
+            <RecommendedTyres
+              title="Liknande däck"
+              currentProduct={items[0]}
+            />
+          )}
+
+
 
         </div>
 
       </div>
-
-      {/* Mobile Sticky Checkout */}
-      {items.length > 0 && (
-
-        <div className="fixed bottom-0 left-0 right-0 bg-white border-t p-4 sm:hidden shadow-lg">
-
-          <div className="flex justify-between mb-2">
-
-            <span className="font-semibold">
-              Totalt:
-            </span>
-
-            <span className="font-bold text-[#B8962E]">
-              {total} kr
-            </span>
-
-          </div>
-
-          <Link href="/checkout">
-
-            <Button className="w-full bg-[#D4AF37] text-black">
-
-              Gå till betalning
-
-            </Button>
-
-          </Link>
-
-        </div>
-
-      )}
 
       <Footer />
 
@@ -317,6 +456,8 @@ export default function CartPage() {
   )
 
 }
+
+
 
 function SummaryRow({
   label,

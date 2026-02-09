@@ -3,7 +3,10 @@
 import { useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { loginUser } from "@/lib/auth"
+
+import { authAPI, cartAPI } from "@/lib/api"
+import { useCartStore } from "@/lib/cart-store"
+
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 
@@ -11,9 +14,67 @@ export default function LoginPage(){
 
   const router = useRouter()
 
+  const { items, setCart } = useCartStore()
+
   const [email,setEmail] = useState("")
   const [password,setPassword] = useState("")
   const [loading,setLoading] = useState(false)
+
+
+  async function syncCart(token:string){
+
+    try{
+
+      /* 1. send guest cart to backend */
+
+      for (const item of items) {
+        if (!item.id) continue
+
+        await cartAPI.add(
+          {
+            productId: String(item.id),
+            quantity: item.quantity,
+          },
+          token
+        )
+      }
+
+      /* 2. load backend cart */
+
+      const res = await cartAPI.get(token)
+
+      if(res?.items){
+
+        setCart(
+
+          res.items.map((item:any)=>({
+
+            id: item.productId || item.product?.id || item.product?._id,
+
+            title: item.title || item.product?.title,
+
+            price: item.price || item.product?.price,
+
+            image: item.image || item.product?.image,
+
+            quantity: item.quantity
+
+          }))
+
+        )
+
+      }
+
+    }
+    catch(err){
+
+      console.error("Cart sync failed", err)
+
+    }
+
+  }
+
+
 
   async function handleLogin(){
 
@@ -21,9 +82,22 @@ export default function LoginPage(){
 
       setLoading(true)
 
-      const user = loginUser(email,password)
+      const res = await authAPI.login({
 
-      if(user.role === "admin"){
+        email,
+        password
+
+      })
+
+      localStorage.setItem("token", res.token)
+
+      localStorage.setItem("user", JSON.stringify(res.user))
+
+      /* AUTO CART SYNC */
+      await syncCart(res.token)
+
+
+      if(res.user.role === "admin"){
 
         router.push("/admin")
 
@@ -33,17 +107,20 @@ export default function LoginPage(){
 
       }
 
-    }catch(err:any){
+    }
+    catch(err:any){
 
-      alert(err.message)
+      alert(err.message || "Login failed")
 
-    }finally{
+    }
+    finally{
 
       setLoading(false)
 
     }
 
   }
+
 
   return(
 
@@ -54,8 +131,6 @@ export default function LoginPage(){
 
         <div className="bg-white p-8 rounded-xl shadow-md w-full max-w-md border">
 
-          {/* Title */}
-
           <h1 className="text-2xl font-bold mb-2 text-center">
             Logga in
           </h1>
@@ -64,37 +139,29 @@ export default function LoginPage(){
             Logga in för att fortsätta
           </p>
 
-          {/* Email */}
-
           <input
             type="email"
             placeholder="E-postadress"
             value={email}
             onChange={(e)=>setEmail(e.target.value)}
-            className="w-full border rounded-lg p-3 mb-4 focus:outline-none focus:ring-2 focus:ring-[#D4AF37]"
+            className="w-full border rounded-lg p-3 mb-4"
           />
-
-          {/* Password */}
 
           <input
             type="password"
             placeholder="Lösenord"
             value={password}
             onChange={(e)=>setPassword(e.target.value)}
-            className="w-full border rounded-lg p-3 mb-4 focus:outline-none focus:ring-2 focus:ring-[#D4AF37]"
+            className="w-full border rounded-lg p-3 mb-4"
           />
-
-          {/* Login Button */}
 
           <button
             onClick={handleLogin}
             disabled={loading}
-            className="w-full bg-[#D4AF37] text-black py-3 rounded-lg font-semibold hover:bg-[#B8962E] transition"
+            className="w-full bg-[#D4AF37] text-black py-3 rounded-lg"
           >
             {loading ? "Loggar in..." : "Logga in"}
           </button>
-
-          {/* Register Section */}
 
           <div className="text-center mt-6">
 
@@ -104,7 +171,7 @@ export default function LoginPage(){
 
             <Link href="/register">
 
-              <button className="mt-2 w-full border border-[#D4AF37] text-[#D4AF37] py-3 rounded-lg font-semibold hover:bg-[#D4AF37] hover:text-black transition">
+              <button className="mt-2 w-full border border-[#D4AF37] text-[#D4AF37] py-3 rounded-lg">
 
                 Skapa konto
 
@@ -114,19 +181,12 @@ export default function LoginPage(){
 
           </div>
 
-          {/* Admin info (optional helper) */}
-
-          <div className="mt-6 text-xs text-gray-400 text-center">
-
-            Admin login: admin@dackdax.com / admin123
-
-          </div>
-
         </div>
 
       </div>
 
       <Footer />
+
     </>
 
   )

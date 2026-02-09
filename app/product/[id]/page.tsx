@@ -1,50 +1,55 @@
 "use client"
 
 import { useParams } from "next/navigation"
+import useSWR from "swr"
 import Image from "next/image"
+
 import { useCartStore } from "@/lib/cart-store"
+import { productAPI } from "@/lib/api"
+import { mapProduct } from "@/lib/mappers"
 
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { Button } from "@/components/ui/button"
 import { RecommendedTyres } from "@/components/recommended-tyres"
 
-import { Fuel, Droplets, Volume2, Truck, ShieldCheck } from "lucide-react"
+import {
+  Fuel,
+  Droplets,
+  Volume2,
+  Truck,
+  ShieldCheck
+} from "lucide-react"
+
 
 export default function ProductDetailsPage() {
 
   const params = useParams()
+  const id = params.id as string
 
   const addItem = useCartStore(state => state.addItem)
 
-  // TEMP DATA (replace with backend later)
-  const product = {
-    id: params.id as string,
 
-    brand: "Continental",
-    title: "EcoContact 6",
+  /* Fetch product */
 
-    price: 899,
+  const { data: product, isLoading } = useSWR(
+    id ? ["product", id] : null,
+    async () => {
+      const res = await productAPI.getById(id)
+      return mapProduct(res)
+    }
+  )
 
-    image: "/tyre.webp",
 
-    width: 205,
-    profile: 55,
-    diameter: 16,
+  if (isLoading)
+    return <div className="p-10">Loading...</div>
 
-    fuel_rating: "A",
-    wet_rating: "B",
-    noise_rating: "71 dB",
+  if (!product)
+    return <div className="p-10">Product not found</div>
 
-    ean: "4019238023456",
-    model: "EcoContact 6",
 
-    availability: "I lager",
 
-    description:
-      "Continental EcoContact 6 är ett premium sommardäck med låg bränsleförbrukning, utmärkt våtgrepp och hög komfort.",
-
-  }
+  /* Cart */
 
   const handleAddToCart = () => {
 
@@ -57,23 +62,24 @@ export default function ProductDetailsPage() {
 
   }
 
-  const handleBuyNow = async () => {
 
-  const productItem = {
-    id: product.id,
-    title: `${product.brand} ${product.title}`,
-    price: product.price,
-    image: product.image,
-    quantity: 1,
+  const handleBuyNow = () => {
+
+    const productItem = {
+      id: product.id,
+      title: `${product.brand} ${product.title}`,
+      price: product.price,
+      image: product.image,
+      quantity: 1,
+    }
+
+    localStorage.setItem("buy-now", JSON.stringify(productItem))
+
+    window.location.href = "/checkout"
+
   }
 
-  // Save temporary buy-now item
-  localStorage.setItem("buy-now", JSON.stringify(productItem))
 
-  // Redirect to checkout page
-  window.location.href = "/checkout"
-
-}
 
   return (
 
@@ -86,26 +92,26 @@ export default function ProductDetailsPage() {
 
           <div className="grid md:grid-cols-2 gap-10">
 
-            {/* LEFT CONTENT */}
+
+            {/* LEFT */}
 
             <div>
 
-              {/* Breadcrumb */}
               <p className="text-sm text-gray-500 mb-2">
                 Hem / Däck / {product.brand}
               </p>
 
-              {/* Title */}
               <h1 className="text-3xl font-bold mb-3">
                 {product.brand} {product.title}
               </h1>
 
-              {/* Size */}
               <p className="text-gray-500 mb-4">
                 {product.width}/{product.profile}R{product.diameter}
               </p>
 
+
               {/* Ratings */}
+
               <div className="flex gap-4 mb-4">
 
                 <Badge icon={Fuel} label="Bränsle" value={product.fuel_rating} />
@@ -116,40 +122,45 @@ export default function ProductDetailsPage() {
 
               </div>
 
+
               {/* Price */}
+
               <div className="text-3xl font-bold text-[#B8962E] mb-4">
                 {product.price} kr
               </div>
 
+
               {/* Description */}
+
               <p className="text-gray-600 mb-6">
-                {product.description}
+                {product.description || "Ingen beskrivning tillgänglig"}
               </p>
 
-              {/* Action buttons */}
-<div className="flex gap-3 mt-6">
 
-  {/* Add to Cart */}
-  <Button
-    onClick={handleAddToCart}
-    variant="outline"
-    className="flex-1 border-[#D4AF37] text-[#B8962E] hover:bg-[#D4AF37]/10"
-  >
-    Lägg i varukorg
-  </Button>
+              {/* Buttons */}
 
-  {/* Buy Now */}
-  <Button
-    onClick={handleBuyNow}
-    className="flex-1 bg-[#D4AF37] text-black hover:bg-[#B8962E]"
-  >
-    Köp nu
-  </Button>
+              <div className="flex gap-3 mt-6">
 
-</div>
+                <Button
+                  onClick={handleAddToCart}
+                  variant="outline"
+                  className="flex-1 border-[#D4AF37]"
+                >
+                  Lägg i varukorg
+                </Button>
+
+                <Button
+                  onClick={handleBuyNow}
+                  className="flex-1 bg-[#D4AF37]"
+                >
+                  Köp nu
+                </Button>
+
+              </div>
 
 
               {/* Benefits */}
+
               <div className="grid grid-cols-2 gap-4 mt-6">
 
                 <Benefit
@@ -168,6 +179,8 @@ export default function ProductDetailsPage() {
 
             </div>
 
+
+
             {/* RIGHT IMAGE */}
 
             <div className="bg-white rounded-xl p-10 border">
@@ -184,6 +197,8 @@ export default function ProductDetailsPage() {
 
           </div>
 
+
+
           {/* SPECIFICATIONS */}
 
           <div className="bg-white mt-10 rounded-xl border">
@@ -196,7 +211,7 @@ export default function ProductDetailsPage() {
 
               <Spec label="EAN" value={product.ean} />
               <Spec label="Märke" value={product.brand} />
-              <Spec label="Modell" value={product.model} />
+              <Spec label="Modell" value={product.title} />
               <Spec label="Bredd" value={product.width} />
               <Spec label="Profil" value={product.profile} />
               <Spec label="Tum" value={product.diameter} />
@@ -207,15 +222,18 @@ export default function ProductDetailsPage() {
             </div>
 
           </div>
+
+
+
+          {/* Recommended */}
+
 <RecommendedTyres
   title="Liknande däck"
-  products={[
-    product,
-    product,
-    product,
-    product,
-  ]}
+  currentProduct={product}
+  limit={4}
 />
+
+
 
         </div>
 
@@ -229,58 +247,64 @@ export default function ProductDetailsPage() {
 
 }
 
-/* Components */
 
-function Badge({ icon: Icon, label, value }: any) {
 
+/* COMPONENTS BELOW MAIN COMPONENT */
+
+
+function Badge({
+  icon: Icon,
+  label,
+  value
+}: {
+  icon: any
+  label: string
+  value: string | number
+}) {
   return (
-
     <div className="flex items-center gap-2 bg-white border px-4 py-2 rounded">
-
       <Icon size={18} />
-
       <div>
         <div className="text-xs text-gray-500">{label}</div>
         <div className="font-semibold">{value}</div>
       </div>
-
     </div>
-
   )
-
 }
 
-function Benefit({ icon: Icon, title, text }: any) {
 
+function Benefit({
+  icon: Icon,
+  title,
+  text
+}: {
+  icon: any
+  title: string
+  text: string
+}) {
   return (
-
     <div className="flex gap-3 bg-white border p-4 rounded">
-
       <Icon className="text-[#B8962E]" />
-
       <div>
         <div className="font-semibold">{title}</div>
         <div className="text-sm text-gray-500">{text}</div>
       </div>
-
     </div>
-
   )
-
 }
 
-function Spec({ label, value }: any) {
 
+function Spec({
+  label,
+  value
+}: {
+  label: string
+  value: string | number
+}) {
   return (
-
     <div className="flex justify-between p-4 border-b">
-
       <span className="text-gray-500">{label}</span>
-
       <span className="font-medium">{value}</span>
-
     </div>
-
   )
-
 }

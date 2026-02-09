@@ -32,32 +32,48 @@ export function Header() {
     useState<"privat" | "foretag">("privat")
 
   const [user, setUser] = useState<any>(null)
+  const [mounted, setMounted] = useState(false)
 
   /* Cart count */
   const cartCount = useCartStore((state) => state.getCount())
 
   /* Load user */
-  useEffect(() => {
+useEffect(() => {
 
-    const storedUser = localStorage.getItem("currentUser")
+  try {
 
-    if (storedUser) {
+    const token = localStorage.getItem("token")
+    const storedUser = localStorage.getItem("user")
+
+    if (token && storedUser) {
 
       setUser(JSON.parse(storedUser))
 
     }
 
+  } catch {}
+
+}, [])
+
+  useEffect(() => {
+    setMounted(true)
   }, [])
 
+
   /* Logout */
-  function handleLogout() {
+function handleLogout() {
 
-    localStorage.removeItem("currentUser")
-    localStorage.removeItem("role")
+  localStorage.removeItem("token")
 
-    window.location.reload()
+  localStorage.removeItem("user")
 
-  }
+  /* DO NOT REMOVE CART */
+
+  window.location.reload()
+
+}
+
+
 
   return (
 
@@ -236,7 +252,7 @@ export function Header() {
 
                 <ShoppingCart className="h-5 w-5" />
 
-                {cartCount > 0 && (
+                {mounted && cartCount > 0 && (
 
                   <span className="absolute -right-1.5 -top-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-[#D4AF37] text-[9px] font-bold text-[#0B0B0B]">
 

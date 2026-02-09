@@ -5,6 +5,7 @@ import { Inter } from "next/font/google"
 import "./globals.css"
 
 import AdminInit from "@/components/admin-init"
+import CartSyncProvider from "@/components/cart-sync-provider"   // ✅ ADD THIS
 
 const inter = Inter({
   subsets: ["latin"],
@@ -32,8 +33,13 @@ export default function RootLayout({
         {/* Admin initializer */}
         <AdminInit />
 
-        {/* App content */}
-        {children}
+        {/* ✅ GLOBAL CART SYNC PROVIDER */}
+        <CartSyncProvider>
+
+          {/* App content */}
+          {children}
+
+        </CartSyncProvider>
 
       </body>
 

@@ -3,9 +3,12 @@
 import { useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { registerUser } from "@/lib/auth"
+
+import { authAPI } from "@/lib/api"
+
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
+
 
 export default function RegisterPage(){
 
@@ -20,7 +23,8 @@ export default function RegisterPage(){
 
   const [loading,setLoading] = useState(false)
 
-  function handleRegister(){
+
+  async function handleRegister(){
 
     if(!form.name || !form.email || !form.password){
 
@@ -40,19 +44,47 @@ export default function RegisterPage(){
 
       setLoading(true)
 
-      registerUser({
-        name:form.name,
-        email:form.email,
-        password:form.password
+      const res = await authAPI.register({
+        name: form.name,
+        email: form.email,
+        password: form.password
       })
 
-      alert("Registrering lyckades!")
 
-      router.push("/login")
+      /*
+        Expected backend response:
+        {
+          token,
+          user: {
+            _id,
+            name,
+            email,
+            role
+          }
+        }
+      */
+
+
+      // Save auth data
+      localStorage.setItem("token", res.token)
+      localStorage.setItem("user", JSON.stringify(res.user))
+
+
+      // Auto redirect based on role
+      if(res.user.role === "admin"){
+
+        router.push("/admin")
+
+      }else{
+
+        router.push("/")
+
+      }
+
 
     }catch(err:any){
 
-      alert(err.message)
+      alert(err.message || "Registrering misslyckades")
 
     }finally{
 
@@ -61,6 +93,8 @@ export default function RegisterPage(){
     }
 
   }
+
+
 
   return(
 
@@ -71,8 +105,6 @@ export default function RegisterPage(){
 
         <div className="bg-white p-8 rounded-xl shadow-md w-full max-w-md border">
 
-          {/* Title */}
-
           <h1 className="text-2xl font-bold mb-2 text-center">
             Skapa konto
           </h1>
@@ -81,57 +113,51 @@ export default function RegisterPage(){
             Registrera dig för att handla däck
           </p>
 
-          {/* Name */}
 
           <input
             type="text"
             placeholder="Fullständigt namn"
             value={form.name}
             onChange={(e)=>setForm({...form,name:e.target.value})}
-            className="w-full border rounded-lg p-3 mb-4 focus:outline-none focus:ring-2 focus:ring-[#D4AF37]"
+            className="w-full border rounded-lg p-3 mb-4"
           />
 
-          {/* Email */}
 
           <input
             type="email"
             placeholder="E-postadress"
             value={form.email}
             onChange={(e)=>setForm({...form,email:e.target.value})}
-            className="w-full border rounded-lg p-3 mb-4 focus:outline-none focus:ring-2 focus:ring-[#D4AF37]"
+            className="w-full border rounded-lg p-3 mb-4"
           />
 
-          {/* Password */}
 
           <input
             type="password"
             placeholder="Lösenord"
             value={form.password}
             onChange={(e)=>setForm({...form,password:e.target.value})}
-            className="w-full border rounded-lg p-3 mb-4 focus:outline-none focus:ring-2 focus:ring-[#D4AF37]"
+            className="w-full border rounded-lg p-3 mb-4"
           />
 
-          {/* Confirm Password */}
 
           <input
             type="password"
             placeholder="Bekräfta lösenord"
             value={form.confirmPassword}
             onChange={(e)=>setForm({...form,confirmPassword:e.target.value})}
-            className="w-full border rounded-lg p-3 mb-4 focus:outline-none focus:ring-2 focus:ring-[#D4AF37]"
+            className="w-full border rounded-lg p-3 mb-4"
           />
 
-          {/* Register Button */}
 
           <button
             onClick={handleRegister}
             disabled={loading}
-            className="w-full bg-[#D4AF37] text-black py-3 rounded-lg font-semibold hover:bg-[#B8962E] transition"
+            className="w-full bg-[#D4AF37] py-3 rounded-lg font-semibold"
           >
             {loading ? "Registrerar..." : "Registrera"}
           </button>
 
-          {/* Login link */}
 
           <div className="text-center mt-6">
 
@@ -141,7 +167,7 @@ export default function RegisterPage(){
 
             <Link href="/login">
 
-              <button className="mt-2 w-full border border-[#D4AF37] text-[#D4AF37] py-3 rounded-lg font-semibold hover:bg-[#D4AF37] hover:text-black transition">
+              <button className="mt-2 w-full border border-[#D4AF37] py-3 rounded-lg">
 
                 Logga in
 
@@ -156,7 +182,6 @@ export default function RegisterPage(){
       </div>
 
       <Footer />
-
     </>
 
   )

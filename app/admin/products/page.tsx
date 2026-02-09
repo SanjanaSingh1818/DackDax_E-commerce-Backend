@@ -1,39 +1,70 @@
 "use client"
 
 import { useEffect, useState } from "react"
+
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 
-const STORAGE_KEY = "products"
+import { productAPI } from "@/lib/api"
 
-const ITEMS_PER_PAGE = 8
 
-const CATEGORIES = [
-  "Summer",
-  "Winter",
-  "All-Season"
-]
 
 export default function AdminProductsPage(){
 
+  const token =
+    typeof window !== "undefined"
+      ? localStorage.getItem("token")
+      : ""
+
+
+
   const [products,setProducts] = useState<any[]>([])
 
-  const [filtered,setFiltered] = useState<any[]>([])
+  const [editingId,setEditingId] = useState<string|null>(null)
 
-  const [search,setSearch] = useState("")
 
-  const [page,setPage] = useState(1)
 
   const [form,setForm] = useState({
+
+    url:"",
+
     title:"",
+
     brand:"",
+
+    model:"",
+
+    season:"",
+
+    dimensions:"",
+
+    width:"",
+
+    profile:"",
+
+    diameter:"",
+
+    size_index:"",
+
+    ean:"",
+
+    availability:"",
+
+    fuel_rating:"",
+
+    wet_rating:"",
+
+    noise_rating:"",
+
     price:"",
-    image:"",
-    category:"Summer",
-    stock:0
+
+    image:""
+
   })
 
-  const [editingId,setEditingId] = useState<number|null>(null)
+
+
+  /* ================= LOAD PRODUCTS ================= */
 
   useEffect(()=>{
 
@@ -41,249 +72,281 @@ export default function AdminProductsPage(){
 
   },[])
 
-  useEffect(()=>{
 
-    handleSearch(search)
 
-  },[products])
+  async function loadProducts(){
 
-  function loadProducts(){
+    const res = await productAPI.getAll()
 
-    const stored = localStorage.getItem(STORAGE_KEY)
-
-    if(stored){
-
-      const data = JSON.parse(stored)
-
-      setProducts(data)
-
-      setFiltered(data)
-
-    }
+    setProducts(res.products)
 
   }
 
-  function saveProducts(data:any){
 
-    localStorage.setItem(STORAGE_KEY,JSON.stringify(data))
 
-    setProducts(data)
+  /* ================= HANDLE CHANGE ================= */
 
-  }
-
-  function handleImageUpload(e:any){
-
-    const reader = new FileReader()
-
-    reader.onload = ()=>{
-
-      setForm({
-        ...form,
-        image: reader.result as string
-      })
-
-    }
-
-    reader.readAsDataURL(e.target.files[0])
-
-  }
-
-  function handleSearch(value:string){
-
-    setSearch(value)
-
-    const filtered = products.filter(p=>
-      p.title?.toLowerCase().includes(value.toLowerCase())
-      ||
-      p.brand?.toLowerCase().includes(value.toLowerCase())
-    )
-
-    setFiltered(filtered)
-
-    setPage(1)
-
-  }
-
-  function addOrUpdate(){
-
-    if(editingId){
-
-      const updated = products.map(p=>
-        p.id===editingId
-        ? {...form,id:editingId}
-        : p
-      )
-
-      saveProducts(updated)
-
-      setEditingId(null)
-
-    }else{
-
-      const newProduct = {
-
-        id: Date.now(),
-
-        ...form,
-
-        stock: Number(form.stock),
-
-        price: Number(form.price),
-
-        status:
-          form.stock == 0
-          ? "Out of Stock"
-          : form.stock < 5
-          ? "Low Stock"
-          : "In Stock"
-
-      }
-
-      saveProducts([...products,newProduct])
-
-    }
-
-    resetForm()
-
-  }
-
-  function resetForm(){
+  function handleChange(
+    key:string,
+    value:any
+  ){
 
     setForm({
-      title:"",
-      brand:"",
-      price:"",
-      image:"",
-      category:"Summer",
-      stock:0
+      ...form,
+      [key]: value
     })
 
   }
 
-  function edit(product:any){
 
-    setEditingId(product.id)
 
-    setForm(product)
+  /* ================= CREATE / UPDATE ================= */
+
+  async function handleSubmit(){
+
+    try{
+
+      const data = {
+
+        ...form,
+
+        width: Number(form.width),
+
+        profile: Number(form.profile),
+
+        diameter: Number(form.diameter),
+
+        noise_rating: Number(form.noise_rating),
+
+        price: Number(form.price),
+
+        ean: Number(form.ean)
+
+      }
+
+
+
+      if(editingId){
+
+        await productAPI.update(
+          editingId,
+          data,
+          token
+        )
+
+      }else{
+
+        await productAPI.create(
+          data,
+          token
+        )
+
+      }
+
+
+
+      resetForm()
+
+      loadProducts()
+
+    }catch(err:any){
+
+      alert(err.message)
+
+    }
 
   }
 
-  function deleteProduct(id:number){
 
-    if(!confirm("Delete this product?")) return
 
-    saveProducts(products.filter(p=>p.id!==id))
+  /* ================= EDIT ================= */
+
+  function handleEdit(product:any){
+
+    setEditingId(product._id)
+
+    setForm({
+
+      url: product.url || "",
+
+      title: product.title || "",
+
+      brand: product.brand || "",
+
+      model: product.model || "",
+
+      season: product.season || "",
+
+      dimensions: product.dimensions || "",
+
+      width: product.width || "",
+
+      profile: product.profile || "",
+
+      diameter: product.diameter || "",
+
+      size_index: product.size_index || "",
+
+      ean: product.ean || "",
+
+      availability: product.availability || "",
+
+      fuel_rating: product.fuel_rating || "",
+
+      wet_rating: product.wet_rating || "",
+
+      noise_rating: product.noise_rating || "",
+
+      price: product.price || "",
+
+      image: product.image || ""
+
+    })
 
   }
 
-  const start = (page-1)*ITEMS_PER_PAGE
 
-  const paginated = filtered.slice(
-    start,
-    start+ITEMS_PER_PAGE
-  )
 
-  const totalPages = Math.ceil(
-    filtered.length/ITEMS_PER_PAGE
-  )
+  /* ================= DELETE ================= */
+
+  async function handleDelete(id:string){
+
+    if(!confirm("Delete product?")) return
+
+    await productAPI.delete(id,token)
+
+    loadProducts()
+
+  }
+
+
+
+  /* ================= RESET ================= */
+
+  function resetForm(){
+
+    setEditingId(null)
+
+    setForm({
+
+      url:"",
+
+      title:"",
+
+      brand:"",
+
+      model:"",
+
+      season:"",
+
+      dimensions:"",
+
+      width:"",
+
+      profile:"",
+
+      diameter:"",
+
+      size_index:"",
+
+      ean:"",
+
+      availability:"",
+
+      fuel_rating:"",
+
+      wet_rating:"",
+
+      noise_rating:"",
+
+      price:"",
+
+      image:""
+
+    })
+
+  }
+
+
+
+  /* ================= UI ================= */
 
   return(
 
     <div>
 
       <h1 className="text-2xl font-bold mb-6">
-        Enterprise Product Management
+        Product Management
       </h1>
 
-      {/* Search */}
 
-      <Input
-        placeholder="Search products..."
-        value={search}
-        onChange={(e)=>handleSearch(e.target.value)}
-        className="mb-4"
-      />
 
-      {/* Form */}
+      {/* FORM */}
 
-      <div className="bg-white p-4 rounded-xl shadow mb-6 grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-3 gap-3 bg-white p-4 rounded-xl shadow mb-6">
 
-        <Input
-          placeholder="Title"
-          value={form.title}
-          onChange={(e)=>setForm({...form,title:e.target.value})}
-        />
+        {Object.keys(form).map((key)=>(
 
-        <Input
-          placeholder="Brand"
-          value={form.brand}
-          onChange={(e)=>setForm({...form,brand:e.target.value})}
-        />
+          <Input
+            key={key}
+            placeholder={key}
+            value={(form as any)[key]}
+            onChange={(e)=>
+              handleChange(
+                key,
+                e.target.value
+              )
+            }
+          />
 
-        <Input
-          placeholder="Price"
-          value={form.price}
-          onChange={(e)=>setForm({...form,price:e.target.value})}
-        />
+        ))}
 
-        <Input
-          placeholder="Stock"
-          value={form.stock}
-          onChange={(e)=>setForm({...form,stock:Number(e.target.value)})}
-        />
 
-        <select
-          value={form.category}
-          onChange={(e)=>setForm({...form,category:e.target.value})}
-          className="border p-2 rounded"
+
+        <Button
+          onClick={handleSubmit}
+          className="col-span-3"
         >
-          {CATEGORIES.map(c=>(
-            <option key={c}>{c}</option>
-          ))}
-        </select>
 
-        <input
-          type="file"
-          onChange={handleImageUpload}
-        />
+          {editingId
+            ? "Update Product"
+            : "Create Product"}
 
-        <Button onClick={addOrUpdate}>
-          {editingId ? "Update" : "Add"}
         </Button>
 
       </div>
 
-      {/* Table */}
+
+
+      {/* PRODUCTS LIST */}
 
       <div className="bg-white rounded-xl shadow">
 
-        {paginated.map(product=>(
+        {products.map(product=>(
 
           <div
-            key={product.id}
-            className="flex items-center justify-between border-b p-3"
+            key={product._id}
+            className="flex justify-between items-center border-b p-3"
           >
 
-            <div className="flex gap-4 items-center">
+            <div className="flex gap-3 items-center">
 
-              {product.image && (
-
-                <img
-                  src={product.image}
-                  className="w-12 h-12"
-                />
-
-              )}
+              <img
+                src={product.image}
+                className="w-12 h-12"
+              />
 
               <div>
 
                 <div className="font-semibold">
-                  {product.brand} {product.title}
+
+                  {product.brand} {product.model}
+
                 </div>
 
                 <div className="text-sm text-gray-500">
 
-                  {product.category}
+                  {product.dimensions}
 
                 </div>
 
@@ -291,33 +354,29 @@ export default function AdminProductsPage(){
 
             </div>
 
-            <div>
 
-              Stock: {product.stock}
-
-            </div>
 
             <div>
-
-              {product.status}
-
-            </div>
-
-            <div>
-
               {product.price} kr
-
             </div>
+
+
 
             <div className="flex gap-2">
 
-              <Button onClick={()=>edit(product)}>
+              <Button
+                onClick={()=>
+                  handleEdit(product)
+                }
+              >
                 Edit
               </Button>
 
               <Button
                 variant="destructive"
-                onClick={()=>deleteProduct(product.id)}
+                onClick={()=>
+                  handleDelete(product._id)
+                }
               >
                 Delete
               </Button>
@@ -325,24 +384,6 @@ export default function AdminProductsPage(){
             </div>
 
           </div>
-
-        ))}
-
-      </div>
-
-      {/* Pagination */}
-
-      <div className="flex gap-2 mt-4">
-
-        {Array.from({length:totalPages},(_,i)=>(
-
-          <Button
-            key={i}
-            onClick={()=>setPage(i+1)}
-            variant={page===i+1?"default":"outline"}
-          >
-            {i+1}
-          </Button>
 
         ))}
 

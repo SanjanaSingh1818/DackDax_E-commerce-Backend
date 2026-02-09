@@ -4,11 +4,15 @@ import { useCallback, useEffect, useState } from "react"
 import { useSearchParams, useRouter } from "next/navigation"
 import useSWR from "swr"
 import { PackageOpen, AlertCircle } from "lucide-react"
+
 import { Filters, type FilterValues } from "@/components/filters"
 import { ProductCard, ProductCardSkeleton } from "@/components/product-card"
 import { Pagination } from "@/components/pagination"
-import type { Product } from "@/lib/data"
 import { Button } from "@/components/ui/button"
+
+import type { Product } from "@/lib/data"
+import { productAPI } from "@/lib/api"
+import { mapProduct } from "@/lib/mappers"
 
 interface ProductsResponse {
   products: Product[]
@@ -18,7 +22,27 @@ interface ProductsResponse {
   per_page: number
 }
 
-const fetcher = (url: string) => fetch(url).then((res) => res.json())
+/* ---------------- API Fetcher ---------------- */
+
+const apiFetcher = async (
+  _key: string,
+  params: { filters: FilterValues; page: number }
+): Promise<ProductsResponse> => {
+  const res = await productAPI.getAll({
+    ...params.filters,
+    page: params.page,
+  })
+
+  return {
+    products: res.products.map(mapProduct),
+    total: res.total,
+    page: res.page,
+    totalPages: res.totalPages,
+    per_page: res.per_page,
+  }
+}
+
+/* ---------------- Component ---------------- */
 
 export function ProductListing() {
   const searchParams = useSearchParams()
@@ -39,25 +63,28 @@ export function ProductListing() {
 
   const [page, setPage] = useState(parseInt(searchParams.get("page") || "1"))
 
-  const buildUrl = useCallback(() => {
-    const params = new URLSearchParams()
-    Object.entries(filters).forEach(([key, value]) => {
-      if (value) params.set(key, value)
-    })
-    params.set("page", page.toString())
-    return `/api/products?${params.toString()}`
+  /* -------- SWR key -------- */
+  const swrKey = useCallback(() => {
+    return ["products", { filters, page }]
   }, [filters, page])
 
-  const { data, error, isLoading } = useSWR<ProductsResponse>(buildUrl(), fetcher, {
-    keepPreviousData: true,
-  })
+  const { data, error, isLoading } = useSWR<ProductsResponse>(
+    swrKey(),
+    ([_, params]) => apiFetcher("products", params),
+    {
+      keepPreviousData: true,
+      revalidateOnFocus: false,
+    }
+  )
 
+  /* -------- URL Sync -------- */
   useEffect(() => {
     const params = new URLSearchParams()
     Object.entries(filters).forEach(([key, value]) => {
       if (value) params.set(key, value)
     })
     if (page > 1) params.set("page", page.toString())
+
     const qs = params.toString()
     router.replace(`/products${qs ? `?${qs}` : ""}`, { scroll: false })
   }, [filters, page, router])
@@ -66,21 +93,36 @@ export function ProductListing() {
     setFilters(newFilters)
     setPage(1)
   }
+      const { data: filterOptions } = useSWR(
+  "productFilters",
+  productAPI.getFilters
+)
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8">
-      {/* Horizontal filter bar */}
-      <Filters filters={filters} onFilterChange={handleFilterChange} />
+
+
+
+<Filters
+  filters={filters}
+  options={filterOptions}
+  onFilterChange={handleFilterChange}
+/>
+
 
       {/* Brand strip */}
       <div className="mt-4 text-center text-xs text-muted-foreground">
-        Vi har dack fran: <span className="font-medium uppercase tracking-wide">Continental, Pirelli, Hankook, Nokian, Michelin, Goodyear, Bridgestone, Dunlop</span> m.fl.
+        Vi har däck från:{" "}
+        <span className="font-medium uppercase tracking-wide">
+          Continental, Pirelli, Hankook, Nokian, Michelin, Goodyear, Bridgestone, Dunlop
+        </span>{" "}
+        m.fl.
       </div>
 
-      {/* Results header */}
+      {/* Header */}
       <div className="mt-6 mb-6 flex items-center justify-between">
         <div>
-          <h2 className="text-lg font-semibold text-foreground">Dack</h2>
+          <h2 className="text-lg font-semibold text-foreground">Däck</h2>
           {data && (
             <p className="text-sm text-muted-foreground">
               {data.total} resultat hittades
@@ -89,23 +131,23 @@ export function ProductListing() {
         </div>
       </div>
 
-      {/* Error State */}
+      {/* Error */}
       {error && (
         <div className="flex flex-col items-center justify-center rounded-xl border border-destructive/20 bg-destructive/5 px-6 py-16">
           <AlertCircle className="mb-3 h-10 w-10 text-destructive" />
           <h3 className="mb-1 text-base font-semibold text-foreground">
-            Nagot gick fel
+            Något gick fel
           </h3>
           <p className="mb-4 text-sm text-muted-foreground">
-            Kunde inte ladda produkter. Forsok igen.
+            Kunde inte ladda produkter. Försök igen.
           </p>
           <Button variant="outline" onClick={() => window.location.reload()}>
-            Forsok igen
+            Försök igen
           </Button>
         </div>
       )}
 
-      {/* Loading State */}
+      {/* Loading */}
       {isLoading && !data && (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {Array.from({ length: 8 }).map((_, i) => (
@@ -114,7 +156,7 @@ export function ProductListing() {
         </div>
       )}
 
-      {/* Empty State */}
+      {/* Empty */}
       {data && data.products.length === 0 && (
         <div className="flex flex-col items-center justify-center rounded-xl border border-border bg-card px-6 py-16">
           <PackageOpen className="mb-3 h-10 w-10 text-muted-foreground" />
@@ -122,7 +164,7 @@ export function ProductListing() {
             Inga produkter hittades
           </h3>
           <p className="mb-4 text-sm text-muted-foreground">
-            Prova att justera dina filter for att hitta det du soker.
+            Prova att justera dina filter för att hitta det du söker.
           </p>
           <Button
             variant="outline"
@@ -146,7 +188,7 @@ export function ProductListing() {
         </div>
       )}
 
-      {/* Product Grid - full width now */}
+      {/* Products */}
       {data && data.products.length > 0 && (
         <>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
