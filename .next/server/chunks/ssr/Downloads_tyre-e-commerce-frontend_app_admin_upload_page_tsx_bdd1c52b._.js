@@ -1,3 +1,0 @@
-module.exports=[1687,a=>{"use strict";var b=a.i(12157);function c(){return(0,b.jsxs)("div",{children:[(0,b.jsx)("h1",{className:"text-2xl font-bold mb-6",children:"CSV Upload"}),(0,b.jsx)("input",{type:"file",accept:".csv",onChange:a=>{let b=a.target.files[0],c=new FileReader;c.onload=()=>{let a=c.result.split("\n").map(a=>{let b=a.split(",");return{id:Date.now()+Math.random(),brand:b[0],title:b[1],price:b[2]}});localStorage.setItem("products",JSON.stringify(a)),alert("CSV uploaded")},c.readAsText(b)}})]})}a.s(["default",()=>c])}];
-
-//# sourceMappingURL=Downloads_tyre-e-commerce-frontend_app_admin_upload_page_tsx_bdd1c52b._.js.map

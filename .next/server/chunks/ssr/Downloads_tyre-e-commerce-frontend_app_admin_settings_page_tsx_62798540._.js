@@ -1,3 +1,0 @@
-module.exports=[59368,a=>{"use strict";var b=a.i(12157),c=a.i(24169);function d(){let[a,d]=(0,c.useState)("");return(0,c.useEffect)(()=>{let a=localStorage.getItem("margin");a&&d(a)},[]),(0,b.jsxs)("div",{children:[(0,b.jsx)("h1",{className:"text-2xl font-bold mb-6",children:"Margin Settings"}),(0,b.jsx)("input",{value:a,onChange:a=>d(a.target.value),placeholder:"Margin %",className:"border p-2 mr-3"}),(0,b.jsx)("button",{onClick:()=>{localStorage.setItem("margin",a),alert("Margin saved")},children:"Save"})]})}a.s(["default",()=>d])}];
-
-//# sourceMappingURL=Downloads_tyre-e-commerce-frontend_app_admin_settings_page_tsx_62798540._.js.map

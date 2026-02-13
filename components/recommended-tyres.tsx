@@ -1,11 +1,12 @@
 "use client"
 
 import useSWR from "swr"
-import { ProductCard } from "@/components/product-card"
-
 import type { Product } from "@/lib/data"
+
 import { productAPI } from "@/lib/api"
 import { mapProduct } from "@/lib/mappers"
+
+import { ProductCarousel } from "@/components/ProductCarousel"
 
 
 
@@ -22,7 +23,6 @@ export function RecommendedTyres({
   currentProduct,
   limit = 8
 }: Props) {
-
 
 
   const { data, isLoading } = useSWR(
@@ -46,7 +46,6 @@ export function RecommendedTyres({
           width: currentProduct.width,
           profile: currentProduct.profile,
           diameter: currentProduct.diameter,
-
           limit
 
         })
@@ -91,18 +90,9 @@ export function RecommendedTyres({
         </h2>
 
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+        {/* ✅ MOBILE CAROUSEL + DESKTOP GRID */}
+        <ProductCarousel products={data} />
 
-          {data.map((product: Product) => (
-
-            <ProductCard
-              key={product.id}
-              product={product}
-            />
-
-          ))}
-
-        </div>
 
       </div>
 

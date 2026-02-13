@@ -82,10 +82,14 @@ function handleLogout() {
       {/* Top bar */}
       <div className="border-b border-[#1F2937] bg-[#0B0B0B]">
 
-        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4">
+        <div className="mx-auto flex h-16 max-w-7xl items-center px-4">
+
+
 
           {/* Left */}
-          <div className="flex items-center gap-4">
+         <div className="flex items-center gap-2 flex-1 min-w-0">
+
+
 
             {/* AUTH SECTION */}
             {!user ? (
@@ -106,14 +110,15 @@ function handleLogout() {
 
             ) : (
 
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2 min-w-0">
 
                 {/* User name */}
-                <div className="text-xs text-white font-medium">
+<div className="text-xs text-white font-medium truncate max-w-[90px] sm:max-w-[140px] md:max-w-[180px]">
+  Hej, {user.name || user.email}
+</div>
 
-                  Hej, {user.name || user.email}
 
-                </div>
+
 
                 {/* Admin link */}
                 {user.role === "admin" && (
@@ -129,24 +134,26 @@ function handleLogout() {
                 )}
 
                 {/* Logout */}
-                <button
-                  onClick={handleLogout}
-                  className="flex flex-col items-center gap-0.5 text-neutral-400 hover:text-red-400"
-                >
-                  <LogOut className="h-5 w-5" />
+               <button
+  onClick={handleLogout}
+  className="flex flex-col items-center gap-0.5 text-neutral-400 hover:text-red-400 flex-shrink-0"
+>
+  <LogOut className="h-5 w-5" />
 
-                  <span className="text-[10px] font-medium">
-                    Logout
-                  </span>
+  <span className="text-[10px] font-medium hidden sm:block">
+    Logout
+  </span>
+</button>
 
-                </button>
 
               </div>
 
             )}
 
             {/* Flag */}
-            <div className="flex items-center gap-1">
+          
+<div className="hidden sm:flex items-center gap-1 flex-shrink-0">
+
               <div className="flex h-7 w-7 items-center justify-center overflow-hidden rounded-full border-2 border-[#D4AF37]">
                 <div className="relative h-full w-full">
                   <div className="absolute inset-0 bg-[#006AA7]" />
@@ -159,7 +166,8 @@ function handleLogout() {
           </div>
 
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2">
+          <Link href="/" className="flex items-center gap-2 flex-shrink-0 justify-center">
+
 
             <span className="text-2xl font-black tracking-tight text-white md:text-3xl">
 
@@ -170,7 +178,8 @@ function handleLogout() {
           </Link>
 
           {/* Right */}
-          <div className="flex items-center gap-3 md:gap-5">
+        <div className="flex items-center gap-3 md:gap-5 flex-shrink-0 justify-end flex-1">
+
 
             {/* Customer toggle */}
             <div className="hidden items-center gap-3 sm:flex">

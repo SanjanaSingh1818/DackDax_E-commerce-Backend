@@ -1,5 +1,5 @@
 "use client"
-
+import { createSlug } from "@/lib/slug"
 import React from "react"
 import Image from "next/image"
 import Link from "next/link"
@@ -29,6 +29,36 @@ SOMMARDÄCK: "Sommar",
 const AVAILABILITY_MAP: Record<string, string> = {
 "In stock": "I lager",
 "3-5 days": "3-5 dagar",
+}
+
+function SeasonIcon({ season }: { season: string }) {
+
+  const seasonLower = season?.toLowerCase() || ""
+
+  let src = "/icons/allseason.png"
+
+  if (seasonLower.includes("sommar") || seasonLower.includes("summer")) {
+    src = "/icons/summer.png"
+  }
+  else if (seasonLower.includes("winter") || seasonLower.includes("vinter")) {
+    src = "/icons/winter.png"
+  }
+  else if (seasonLower.includes("friction")) {
+    src = "/icons/friction.png"
+  }
+  else if (seasonLower.includes("all")) {
+    src = "/icons/allseason.png"
+  }
+
+  return (
+    <Image
+      src={src}
+      alt={season}
+      width={36}
+      height={36}
+      className="object-contain"
+    />
+  )
 }
 
 /* ================================
@@ -133,7 +163,7 @@ catch (err) {
 }
 
 const productLink =
-`/product/${productId || product.id}`
+  `/product/${createSlug(product)}-${product.id}`
 
 return (
 
@@ -141,38 +171,40 @@ return (
 
 
   {/* IMAGE */}
-  <Link href={productLink}>
+ {/* IMAGE */}
+<Link href={productLink}>
+ <div className="relative flex items-center justify-center overflow-hidden bg-muted h-56 sm:h-60 cursor-pointer transition-colors duration-300 group-hover:bg-muted/70">
 
-    <div className="relative flex items-center justify-center overflow-hidden bg-muted p-6 cursor-pointer">
-
-      <Image
-        src={
-          product.image ||
-          "/placeholder.svg"
-        }
-        alt={`${product.brand} ${product.title}`}
-        width={200}
-        height={200}
-        className="h-40 w-40 object-contain transition-transform duration-300 group-hover:scale-110"
-      />
+    {/* Image wrapper */}
+<div className="relative h-full w-full">
+  <Image
+    src={product.image || "/placeholder.svg"}
+    alt={`${product.brand} ${product.title}`}
+    fill
+    sizes="(max-width: 640px) 320px, (max-width: 1024px) 380px, 420px"
+    className="object-contain scale-[1.35] transition-all duration-500 ease-out group-hover:scale-[1.45]"
+  />
+</div>
 
 
-      {/* SEASON BADGE */}
-      <span
-        className={`absolute left-3 top-3 rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${
-          product.season === "SOMMARDÄCK"
-            ? "bg-[#D4AF37]/15 text-[#B8962E]"
-            : product.season === "Winter"
-            ? "bg-blue-100 text-blue-700"
-            : "bg-green-100 text-green-700"
-        }`}
-      >
-        {seasonLabel}
-      </span>
 
-    </div>
 
-  </Link>
+    {/* SEASON BADGE */}
+<div className="absolute left-3 top-3 flex flex-col items-center bg-white/95 rounded-lg p-1.5 shadow-md">
+
+  <SeasonIcon season={product.season} />
+
+  <span className="text-[10px] font-semibold text-black">
+    {seasonLabel}
+  </span>
+
+</div>
+
+
+
+  </div>
+</Link>
+
 
 
 
@@ -343,8 +375,6 @@ return (
   </div>
 
 </div>
-
-
 )
 
 }

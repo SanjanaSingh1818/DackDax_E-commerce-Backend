@@ -1,3 +1,0 @@
-module.exports=[24208,a=>{"use strict";var b=a.i(12157),c=a.i(24169);function d(){let[a,d]=(0,c.useState)([]);return(0,c.useEffect)(()=>{let a=localStorage.getItem("orders");a&&d(JSON.parse(a))},[]),(0,b.jsxs)("div",{children:[(0,b.jsx)("h1",{className:"text-2xl font-bold mb-6",children:"Orders"}),a.map(a=>(0,b.jsxs)("div",{className:"bg-white p-4 rounded-xl shadow mb-4",children:[(0,b.jsxs)("div",{className:"font-semibold",children:["Order #",a.id]}),(0,b.jsxs)("div",{className:"text-gray-500",children:["Total: ",a.total," kr"]}),(0,b.jsxs)("div",{className:"text-sm",children:["Status: ",a.status]})]},a.id))]})}a.s(["default",()=>d])}];
-
-//# sourceMappingURL=Downloads_tyre-e-commerce-frontend_app_admin_orders_page_tsx_b1eea754._.js.map

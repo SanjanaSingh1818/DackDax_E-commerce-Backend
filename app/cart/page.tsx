@@ -22,8 +22,6 @@ import { Input } from "@/components/ui/input"
 
 import { RecommendedTyres } from "@/components/recommended-tyres"
 
-
-
 export default function CartPage() {
 
   const {
@@ -41,8 +39,6 @@ export default function CartPage() {
     typeof window !== "undefined"
       ? localStorage.getItem("token")
       : null
-
-
 
   /* =============================
      LOAD CART FROM BACKEND
@@ -110,53 +106,61 @@ useEffect(() => {
 
 }, [token])
 
-
-
-
   /* =============================
      BACKEND SYNC FUNCTIONS
   ============================== */
 
-  async function handleIncrease(item:any) {
+async function handleIncrease(item:any) {
 
-    increaseQty(item.id)
+  const newQty = item.quantity + 1
 
-    if (token) {
+  increaseQty(item.id)
 
-      try {
+  if (token) {
 
-        await cartAPI.update(
-          item.id,
-          item.quantity + 1,
-          token
-        )
+    try {
 
-      } catch {}
+      await cartAPI.update(
+        item.id,
+        newQty,
+        token
+      )
 
-    }
+    } catch (err) {
 
-  }
-
-
-  async function handleDecrease(item:any) {
-
-    decreaseQty(item.id)
-
-    if (token && item.quantity > 1) {
-
-      try {
-
-        await cartAPI.update(
-          item.id,
-          item.quantity - 1,
-          token
-        )
-
-      } catch {}
+      console.error(err)
 
     }
 
   }
+
+}
+
+
+async function handleDecrease(item:any) {
+
+  if (item.quantity <= 1) return // minimum should be 1, not 4
+
+  const newQty = item.quantity - 1
+
+  decreaseQty(item.id)
+
+  if (token) {
+
+    try {
+
+      await cartAPI.update(
+        item.id,
+        newQty,
+        token
+      )
+
+    } catch {}
+
+  }
+
+}
+
 
 
   async function handleRemove(item:any) {
@@ -177,7 +181,6 @@ useEffect(() => {
     }
 
   }
-
 
   async function handleClearCart() {
 
@@ -203,8 +206,6 @@ useEffect(() => {
 
   }
 
-
-
   /* =============================
      TOTALS
   ============================== */
@@ -213,8 +214,6 @@ useEffect(() => {
   const shipping = subtotal > 0 ? 99 : 0
   const tax = Math.round(subtotal * 0.25)
   const total = subtotal + shipping + tax
-
-
 
   return (
 
@@ -236,8 +235,6 @@ useEffect(() => {
             </h1>
 
           </div>
-
-
 
           {/* Empty cart */}
           {items.length === 0 && (
@@ -264,8 +261,6 @@ useEffect(() => {
             </div>
 
           )}
-
-
 
           {/* Cart Content */}
           {items.length > 0 && (
@@ -303,9 +298,12 @@ useEffect(() => {
                         {/* Title and Remove */}
                         <div className="flex justify-between">
 
-                          <h2 className="font-semibold">
-                            {item.title}
-                          </h2>
+                          <Link href={`/product/${item.id}`}>
+  <h2 className="font-semibold hover:text-[#D4AF37] cursor-pointer">
+    {item.title}
+  </h2>
+</Link>
+
 
                           <button
                             onClick={() => handleRemove(item)}
@@ -318,8 +316,8 @@ useEffect(() => {
 
 
                         <p className="text-sm text-gray-500 mt-1">
-                          {item.price} kr / st
-                        </p>
+  {item.price} kr / däck
+</p>
 
 
 
@@ -328,12 +326,17 @@ useEffect(() => {
 
                           <div className="flex items-center border rounded-lg overflow-hidden">
 
-                            <button
-                              onClick={() => handleDecrease(item)}
-                              className="px-3 py-1 hover:bg-gray-100"
-                            >
-                              <Minus size={14}/>
-                            </button>
+                           <button
+  onClick={() => handleDecrease(item)}
+  className={`px-3 py-1 transition ${
+    item.quantity <= 1
+      ? "opacity-40 cursor-not-allowed"
+      : "hover:bg-gray-100 cursor-pointer"
+  }`}
+>
+  <Minus size={14}/>
+</button>
+
 
                             <div className="px-4">
                               {item.quantity}
@@ -436,12 +439,14 @@ useEffect(() => {
 
 
           {/* Recommended Tyres */}
-          {items.length > 0 && (
-            <RecommendedTyres
-              title="Liknande däck"
-              currentProduct={items[0]}
-            />
-          )}
+{items.length > 0 && (
+
+  <RecommendedTyres
+    title="Rekommenderade däck"
+    limit={8}
+  />
+
+)}
 
 
 

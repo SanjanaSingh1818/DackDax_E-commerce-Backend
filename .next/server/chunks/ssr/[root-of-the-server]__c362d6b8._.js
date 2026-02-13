@@ -1,3 +1,0 @@
-module.exports=[18622,(a,b,c)=>{b.exports=a.x("next/dist/compiled/next-server/app-page-turbo.runtime.prod.js",()=>require("next/dist/compiled/next-server/app-page-turbo.runtime.prod.js"))},58819,(a,b,c)=>{"use strict";b.exports=a.r(18622)},24169,(a,b,c)=>{"use strict";b.exports=a.r(58819).vendored["react-ssr"].React},44942,a=>{"use strict";var b=a.i(24169);function c(){return(0,b.useEffect)(()=>{let a=JSON.parse(localStorage.getItem("users")||"[]");a.find(a=>"admin"===a.role)||(a.push({id:1,name:"Admin",email:"admin@dackdax.com",password:"admin123",role:"admin"}),localStorage.setItem("users",JSON.stringify(a)),console.log("Admin user created"))},[]),null}a.s(["default",()=>c])}];
-
-//# sourceMappingURL=%5Broot-of-the-server%5D__c362d6b8._.js.map

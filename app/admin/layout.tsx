@@ -26,9 +26,8 @@ export default function AdminLayout({
   const pathname = usePathname()
   const router = useRouter()
 
-  const [sidebarOpen,setSidebarOpen] = useState(true)
+  const [sidebarOpen,setSidebarOpen] = useState(false)
   const [isMobile,setIsMobile] = useState(false)
-
   const [checkingAuth,setCheckingAuth] = useState(true)
 
 
@@ -68,7 +67,7 @@ export default function AdminLayout({
 
     }
 
-  },[])
+  },[router])
 
 
 
@@ -84,7 +83,15 @@ export default function AdminLayout({
 
       setIsMobile(mobile)
 
-      setSidebarOpen(!mobile)
+      if(!mobile){
+
+        setSidebarOpen(true)
+
+      }else{
+
+        setSidebarOpen(false)
+
+      }
 
     }
 
@@ -154,7 +161,7 @@ export default function AdminLayout({
 
 
   /* =========================
-     Loading state
+     Loading State
   ========================== */
 
   if(checkingAuth){
@@ -184,79 +191,122 @@ export default function AdminLayout({
     <div className="flex min-h-screen bg-gray-100">
 
 
+      {/* Overlay (mobile only) */}
+
+      {sidebarOpen && isMobile && (
+
+        <div
+          className="fixed inset-0 bg-black/50 z-30 md:hidden"
+          onClick={()=>setSidebarOpen(false)}
+        />
+
+      )}
+
+
+
       {/* Sidebar */}
 
-      <div className={`
+      <aside className={`
 
         fixed md:relative z-40
-        ${sidebarOpen ? "w-64" : "w-0"}
+        h-full md:h-auto
+        w-64
         bg-black text-white
-        transition-all duration-300
-        overflow-hidden
+        shadow-xl
+
+        transform transition-transform duration-300
+
+        ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}
+
+        md:translate-x-0
 
       `}>
 
-        <div className="p-6">
 
-          <h2 className="text-xl font-bold mb-8">
+        {/* Sidebar Header */}
+
+        <div className="flex items-center justify-between p-5 border-b border-gray-800">
+
+          <h2 className="text-lg font-bold">
             DackDax Admin
           </h2>
 
 
-          <nav className="space-y-2">
+          {/* Close button mobile */}
 
-            {links.map(link=>(
-
-              <SidebarLink
-                key={link.href}
-                href={link.href}
-                icon={link.icon}
-                label={link.label}
-                active={pathname===link.href}
-              />
-
-            ))}
-
-          </nav>
+          <button
+            onClick={()=>setSidebarOpen(false)}
+            className="md:hidden"
+          >
+            <X size={20}/>
+          </button>
 
         </div>
 
-      </div>
+
+
+        {/* Sidebar Links */}
+
+        <nav className="p-4 space-y-2">
+
+          {links.map(link=>(
+
+            <SidebarLink
+              key={link.href}
+              href={link.href}
+              icon={link.icon}
+              label={link.label}
+              active={pathname===link.href}
+              onClick={()=>isMobile && setSidebarOpen(false)}
+            />
+
+          ))}
+
+        </nav>
+
+      </aside>
 
 
 
-      {/* Main */}
+      {/* Main Area */}
 
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col min-w-0">
 
 
         {/* Header */}
 
-        <header className="bg-white shadow px-6 py-4 flex justify-between items-center">
-
-          <button
-            onClick={()=>setSidebarOpen(!sidebarOpen)}
-            className="md:hidden"
-          >
-
-            {sidebarOpen ? <X/> : <Menu/>}
-
-          </button>
+        <header className="bg-white border-b px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between sticky top-0 z-20">
 
 
-          <div className="font-semibold">
-            Admin Panel
+          {/* Left */}
+
+          <div className="flex items-center gap-3">
+
+            <button
+              onClick={()=>setSidebarOpen(true)}
+              className="md:hidden"
+            >
+              <Menu size={22}/>
+            </button>
+
+            <h1 className="font-semibold text-lg">
+              Admin Panel
+            </h1>
+
           </div>
 
+
+          {/* Right */}
 
           <button
             onClick={logout}
             className="flex items-center gap-2 text-red-500 hover:text-red-600"
           >
-
             <LogOut size={18}/>
 
-            Logout
+            <span className="hidden sm:inline">
+              Logout
+            </span>
 
           </button>
 
@@ -264,11 +314,24 @@ export default function AdminLayout({
 
 
 
-        {/* Content */}
+        {/* Content Container */}
 
-        <main className="p-6 flex-1">
+        <main className="flex-1">
 
-          {children}
+          <div className="
+            mx-auto
+            w-full
+            max-w-[1400px]
+            px-4
+            sm:px-6
+            lg:px-8
+            py-6
+            lg:py-8
+          ">
+
+            {children}
+
+          </div>
 
         </main>
 
@@ -292,22 +355,22 @@ function SidebarLink({
   href,
   icon: Icon,
   label,
-  active
+  active,
+  onClick
 }:any){
 
   return(
 
     <Link
       href={href}
+      onClick={onClick}
       className={`
-
         flex items-center gap-3 px-3 py-2 rounded-lg transition
 
         ${active
-          ? "bg-[#D4AF37] text-black"
-          : "hover:bg-gray-800"
+          ? "bg-[#D4AF37] text-black font-medium"
+          : "hover:bg-gray-800 text-gray-300 hover:text-white"
         }
-
       `}
     >
 
