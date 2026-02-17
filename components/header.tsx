@@ -29,7 +29,17 @@ export function Header() {
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
-  const { customerType, setCustomerType } = useCustomerType()
+// ✅ Use global customer type store (correct version)
+const { customerType, setCustomerType } = useCustomerType()
+
+// ✅ Optional: restore saved type from localStorage on first load
+useEffect(() => {
+  const savedType = localStorage.getItem("customerType")
+
+  if (savedType === "foretag" || savedType === "privat") {
+    setCustomerType(savedType)
+  }
+}, [setCustomerType])
 
   const [user, setUser] = useState<any>(null)
   const [mounted, setMounted] = useState(false)
@@ -166,16 +176,17 @@ function handleLogout() {
           </div>
 
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2 flex-shrink-0 justify-center">
+<Link href="/" className="flex items-center flex-shrink-0 px-4">
+  <img 
+    src="/logo-removebg.png" 
+    alt="DACKDAX Logo"
+    className="h-12 md:h-14 lg:h-16 w-auto object-contain"
+  />
+</Link>
 
 
-            <span className="text-2xl font-black tracking-tight text-white md:text-3xl">
 
-              DACK<span className="text-[#D4AF37]">DAX</span>
 
-            </span>
-
-          </Link>
 
           {/* Right */}
         <div className="flex items-center gap-3 md:gap-5 flex-shrink-0 justify-end flex-1">
@@ -185,7 +196,11 @@ function handleLogout() {
             <div className="hidden items-center gap-3 sm:flex">
 
               <button
-                onClick={() => setCustomerType("privat")}
+  onClick={() => {
+    setCustomerType("foretag")
+    localStorage.setItem("customerType", "foretag")
+    window.dispatchEvent(new Event("customerTypeChange"))
+  }}
                 className={`flex items-center gap-1.5 text-xs font-medium transition-colors ${
                   customerType === "privat"
                     ? "text-[#D4AF37]"
@@ -206,9 +221,12 @@ function handleLogout() {
                   (inkl. moms)
                 </span>
               </button>
-
-              <button
-                onClick={() => setCustomerType("foretag")}
+             <button
+  onClick={() => {
+    setCustomerType("foretag")
+    localStorage.setItem("customerType", "foretag")
+    window.dispatchEvent(new Event("customerTypeChange"))
+  }}
                 className={`flex items-center gap-1.5 text-xs font-medium transition-colors ${
                   customerType === "foretag"
                     ? "text-[#D4AF37]"
