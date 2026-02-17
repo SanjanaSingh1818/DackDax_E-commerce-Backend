@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { useEffect, useState } from "react"
+import { Suspense, useEffect, useState } from "react"
 import { useSearchParams } from "next/navigation"
 import { CheckCircle, AlertTriangle } from "lucide-react"
 
@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button"
 import { useCartStore } from "@/lib/cart-store"
 import { paymentAPI } from "@/lib/api"
 
-export default function SuccessPage() {
+function SuccessContent() {
   const clearCart = useCartStore((state) => state.clearCart)
   const searchParams = useSearchParams()
   const sessionId = searchParams.get("session_id")
@@ -104,3 +104,20 @@ export default function SuccessPage() {
   )
 }
 
+export default function SuccessPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center bg-[#F9FAFB]">
+          <div className="bg-white p-10 rounded-xl border text-center max-w-md">
+            <div className="mx-auto mb-4 h-10 w-10 animate-spin rounded-full border-4 border-[#D4AF37] border-t-transparent" />
+            <h1 className="text-2xl font-bold mb-2">Vänta...</h1>
+            <p className="text-gray-500">Verifierar betalning...</p>
+          </div>
+        </div>
+      }
+    >
+      <SuccessContent />
+    </Suspense>
+  )
+}
