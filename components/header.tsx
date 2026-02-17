@@ -4,7 +4,6 @@ import { useState, useEffect } from "react"
 import Link from "next/link"
 import {
   ShoppingCart,
-  GitCompareArrows,
   User,
   Menu,
   X,
@@ -16,6 +15,8 @@ import {
 
 import { Button } from "@/components/ui/button"
 import { useCartStore } from "@/lib/cart-store"
+import { useCustomerType } from "@/lib/pricing"
+import { CompareNavButton } from "@/components/compare-button"
 
 const NAV_ITEMS = [
   { label: "Hem", href: "/" },
@@ -28,8 +29,7 @@ export function Header() {
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
-  const [customerType, setCustomerType] =
-    useState<"privat" | "foretag">("privat")
+  const { customerType, setCustomerType } = useCustomerType()
 
   const [user, setUser] = useState<any>(null)
   const [mounted, setMounted] = useState(false)
@@ -233,23 +233,7 @@ function handleLogout() {
             </div>
 
             {/* Compare */}
-            <button className="flex flex-col items-center gap-0.5 text-neutral-400 hover:text-white">
-
-              <div className="relative">
-
-                <GitCompareArrows className="h-5 w-5" />
-
-                <span className="absolute -right-1.5 -top-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-[#D4AF37] text-[9px] font-bold text-[#0B0B0B]">
-                  0
-                </span>
-
-              </div>
-
-              <span className="text-[10px] font-medium">
-                Jamfor
-              </span>
-
-            </button>
+            <CompareNavButton />
 
             {/* Cart */}
             <Link

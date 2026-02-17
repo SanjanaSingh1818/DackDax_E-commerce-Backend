@@ -196,6 +196,8 @@ export default function OrdersPage(){
                     <td className="p-4 text-gray-600">
 
                       {order.customerName ||
+                       order.customer?.name ||
+                       order.customer?.email ||
                        order.user?.name ||
                        "Customer"}
 

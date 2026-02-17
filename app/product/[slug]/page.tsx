@@ -8,6 +8,7 @@ import { X } from "lucide-react"
 import { useCartStore } from "@/lib/cart-store"
 import { productAPI } from "@/lib/api"
 import { mapProduct } from "@/lib/mappers"
+import { toDisplayPrice, useCustomerType } from "@/lib/pricing"
 import { ChevronDown, ChevronUp } from "lucide-react"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
@@ -73,6 +74,7 @@ export default function ProductDetailsPage() {
   )
 
   const addItem = useCartStore(state => state.addItem)
+  const { customerType } = useCustomerType()
 
   const [quantity, setQuantity] = useState(4)
 
@@ -178,7 +180,7 @@ export default function ProductDetailsPage() {
 
               {/* PRICE */}
               <div className="text-3xl font-bold text-[#B8962E]">
-                {product.price} kr / däck
+                {toDisplayPrice(product.price, customerType)} kr / däck
               </div>
 
 
@@ -187,7 +189,7 @@ export default function ProductDetailsPage() {
 
                 Totalt pris:{" "}
                 <span className="font-bold text-[#B8962E]">
-                  {product.price * quantity} kr
+                  {toDisplayPrice(product.price, customerType) * quantity} kr
                 </span>
 
               </div>

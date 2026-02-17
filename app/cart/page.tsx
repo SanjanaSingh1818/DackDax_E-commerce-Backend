@@ -14,6 +14,7 @@ import { useEffect } from "react"
 
 import { useCartStore } from "@/lib/cart-store"
 import { cartAPI } from "@/lib/api"
+import { toDisplayPrice, useCustomerType } from "@/lib/pricing"
 
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
@@ -24,6 +25,19 @@ import { RecommendedTyres } from "@/components/recommended-tyres"
 
 export default function CartPage() {
 
+  const normalizeId = (value: any): string => {
+    if (value === undefined || value === null) return ""
+    if (typeof value === "object" && value.$oid) return String(value.$oid).trim()
+    const safe = String(value).trim()
+    if (!safe || safe === "undefined" || safe === "null" || safe === "[object Object]") return ""
+    return safe
+  }
+
+  const safeImage = (value: any) => {
+    const src = typeof value === "string" ? value.trim() : ""
+    return src || "/placeholder.svg"
+  }
+
   const {
     items,
     setCart,
@@ -33,6 +47,7 @@ export default function CartPage() {
     clearCart,
     getTotal
   } = useCartStore()
+  const { customerType } = useCustomerType()
 
 
   const token =
@@ -64,29 +79,31 @@ useEffect(() => {
                 ? item.productId
                 : item.product
 
+            const id = normalizeId(
+              prod?._id ||
+              prod?.id ||
+              item.productId ||
+              item.product?._id
+            )
+
             return {
-              id:
-                prod?._id ||
-                prod?.id ||
-                item.productId ||
-                item.product?._id,
+              id,
 
               title:
                 item.title ||
-                prod?.title,
+                prod?.title ||
+                "Produkt",
 
               price:
-                item.price ||
-                prod?.price,
+                Number(item.price ?? prod?.price ?? 0),
 
               image:
-                item.image ||
-                prod?.image,
+                safeImage(item.image || prod?.image),
 
               quantity:
-                item.quantity
+                Number(item.quantity || 1)
             }
-          })
+          }).filter((i:any) => i.id)
 
         setCart(backendItems)
 
@@ -210,10 +227,11 @@ async function handleDecrease(item:any) {
      TOTALS
   ============================== */
 
-  const subtotal = getTotal()
+  const subtotalExcl = getTotal()
+  const tax = customerType === "privat" ? Math.round(subtotalExcl * 0.25) : 0
+  const subtotal = subtotalExcl + tax
   const shipping = subtotal > 0 ? 99 : 0
-  const tax = Math.round(subtotal * 0.25)
-  const total = subtotal + shipping + tax
+  const total = subtotal + shipping
 
   return (
 
@@ -271,10 +289,15 @@ async function handleDecrease(item:any) {
               {/* LEFT SIDE */}
               <div className="lg:col-span-2 space-y-4">
 
-                {items.map(item => (
+                {items.map((item, index) => {
+                  const id = normalizeId(item.id)
+                  const imageSrc = safeImage(item.image)
+                  const productHref = id ? `/product/${id}` : "/products"
+
+                  return (
 
                   <div
-                    key={item.id}
+                    key={`${id || "cart-item"}-${index}`}
                     className="bg-white border rounded-xl p-4 shadow-sm hover:shadow-md transition"
                   >
 
@@ -283,7 +306,7 @@ async function handleDecrease(item:any) {
 
                       {/* Image */}
                       <Image
-                        src={item.image}
+                        src={imageSrc}
                         alt={item.title}
                         width={90}
                         height={90}
@@ -298,7 +321,7 @@ async function handleDecrease(item:any) {
                         {/* Title and Remove */}
                         <div className="flex justify-between">
 
-                          <Link href={`/product/${item.id}`}>
+                          <Link href={productHref}>
   <h2 className="font-semibold hover:text-[#D4AF37] cursor-pointer">
     {item.title}
   </h2>
@@ -316,7 +339,7 @@ async function handleDecrease(item:any) {
 
 
                         <p className="text-sm text-gray-500 mt-1">
-  {item.price} kr / däck
+  {toDisplayPrice(item.price, customerType)} kr / däck
 </p>
 
 
@@ -352,7 +375,7 @@ async function handleDecrease(item:any) {
                           </div>
 
                           <div className="font-bold text-[#B8962E]">
-                            {item.price * item.quantity} kr
+                            {toDisplayPrice(item.price, customerType) * item.quantity} kr
                           </div>
 
                         </div>
@@ -363,7 +386,7 @@ async function handleDecrease(item:any) {
 
                   </div>
 
-                ))}
+                )})}
 
 
 
@@ -416,9 +439,14 @@ async function handleDecrease(item:any) {
                     Ordersammanfattning
                   </h2>
 
-                  <SummaryRow label="Delsumma" value={`${subtotal} kr`} />
+                  <SummaryRow
+                    label={customerType === "privat" ? "Delsumma (inkl. moms)" : "Delsumma (exkl. moms)"}
+                    value={`${subtotal} kr`}
+                  />
                   <SummaryRow label="Frakt" value={`${shipping} kr`} />
-                  <SummaryRow label="Moms (25%)" value={`${tax} kr`} />
+                  {customerType === "privat" && (
+                    <SummaryRow label="Moms (25%)" value={`${tax} kr`} />
+                  )}
 
                   <hr className="my-3"/>
 

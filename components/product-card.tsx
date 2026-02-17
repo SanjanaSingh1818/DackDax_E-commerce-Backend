@@ -13,7 +13,9 @@ Volume2
 
 import { Button } from "@/components/ui/button"
 import { useCartStore } from "@/lib/cart-store"
+import { toDisplayPrice, useCustomerType } from "@/lib/pricing"
 import type { Product } from "@/lib/data"
+import { CompareToggleButton } from "@/components/compare-button"
 
 /* ================================
 MAPS
@@ -102,6 +104,7 @@ PRODUCT CARD
 export function ProductCard({ product }: { product: Product }) {
 
 const addItem = useCartStore((state) => state.addItem)
+const { customerType } = useCustomerType()
 
 const rawId =
   (product as any)?._id ??
@@ -280,7 +283,7 @@ return (
 
         <span className="text-xl font-bold text-foreground">
 
-          {product.price}
+          {toDisplayPrice(product.price, customerType)}
 
           <span className="text-sm font-normal text-muted-foreground">
 
@@ -317,6 +320,8 @@ return (
           </Button>
 
         </Link>
+
+        <CompareToggleButton product={product} />
 
 
 

@@ -10,14 +10,18 @@ import { useState } from "react"
 import { useRouter } from "next/navigation"
 
 import { orderAPI, paymentAPI } from "@/lib/api"
+import { toDisplayPrice, useCustomerType } from "@/lib/pricing"
 
 export default function CheckoutPage() {
 
   const router = useRouter()
 
-  const { items, getTotal, clearCart } = useCartStore()
+  const { items, getTotal } = useCartStore()
+  const { customerType } = useCustomerType()
 
-  const subtotal = getTotal()
+  const subtotalExcl = getTotal()
+  const tax = customerType === "privat" ? Math.round(subtotalExcl * 0.25) : 0
+  const subtotal = subtotalExcl + tax
 
   const [loading, setLoading] = useState(false)
 
@@ -70,14 +74,15 @@ export default function CheckoutPage() {
         items: items.map(item => ({
           productId: item.id,
           title: item.title,
-          price: item.price,
+          price: toDisplayPrice(item.price, customerType),
           quantity: item.quantity,
           image: item.image
         })),
 
         total: subtotal,
 
-        customer: form
+        customer: form,
+        customerType
 
       }
 
@@ -90,7 +95,7 @@ export default function CheckoutPage() {
 
 
       /* =========================
-         STEP 2: CREATE PAYMENT INTENT
+         STEP 2: CREATE STRIPE CHECKOUT SESSION
       ========================== */
 
       const paymentRes = await paymentAPI.createIntent({
@@ -98,7 +103,6 @@ export default function CheckoutPage() {
         orderId: orderRes._id || orderRes.order?._id,
 
         amount: subtotal,
-
         currency: "sek"
 
       }, token)
@@ -109,15 +113,7 @@ export default function CheckoutPage() {
 
 
       /* =========================
-         STEP 3: CLEAR CART
-      ========================== */
-
-      clearCart()
-
-
-
-      /* =========================
-         STEP 4: REDIRECT TO STRIPE
+         STEP 3: REDIRECT TO STRIPE
       ========================== */
 
       if (paymentRes.url) {
@@ -126,7 +122,7 @@ export default function CheckoutPage() {
 
       } else {
 
-        alert("Payment intent created successfully")
+        alert("Kunde inte starta betalning. Försök igen.")
 
       }
 
@@ -229,7 +225,7 @@ export default function CheckoutPage() {
               </span>
 
               <span>
-                {item.price * item.quantity} kr
+                {toDisplayPrice(item.price, customerType) * item.quantity} kr
               </span>
 
             </div>
@@ -256,8 +252,8 @@ export default function CheckoutPage() {
           >
 
             {loading
-              ? "Processing..."
-              : "Pay Now"}
+              ? "Bearbetar..."
+              : "Betala nu"}
 
           </Button>
 

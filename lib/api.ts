@@ -212,6 +212,11 @@ export const paymentAPI = {
       headers: { Authorization: `Bearer ${token}` },
       body: JSON.stringify(data),
     }),
+
+  getSession: (sessionId: string, token: string) =>
+    request<any>(`/api/payment/session/${sessionId}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    }),
 };
 
 export default request;

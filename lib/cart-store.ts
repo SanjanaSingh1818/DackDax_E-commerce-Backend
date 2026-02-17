@@ -48,8 +48,14 @@ items:[],
 
 normalizeId:(value:any)=>{
   if(value===undefined||value===null) return ""
+  if(typeof value==="object"){
+    if(value.$oid) return String(value.$oid).trim()
+    if(value._id) return String(value._id).trim()
+    if(value.id) return String(value.id).trim()
+  }
   const str=String(value).trim()
   if(!str||str==="undefined"||str==="null") return ""
+  if(str==="[object Object]") return ""
   return str
 },
 
@@ -100,7 +106,7 @@ set({
 
 items:[
 ...items,
-{...product,id,quantity:1}
+{...product,id,quantity:4}
 ]
 
 })
@@ -110,7 +116,7 @@ if(token){
 await cartAPI.add({
 
 productId:id,
-quantity:1
+quantity:4
 
 },token)
 
@@ -256,3 +262,4 @@ storage:createJSONStorage(()=>localStorage)
 )
 
 )
+
