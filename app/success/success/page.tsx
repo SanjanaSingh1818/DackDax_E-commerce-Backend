@@ -1,17 +1,18 @@
-"use client"
+import { redirect } from "next/navigation"
 
-import { useEffect } from "react"
-import { useRouter, useSearchParams } from "next/navigation"
+export default async function LegacySuccessRedirectPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>
+}) {
+  const params = await searchParams
+  const qs = new URLSearchParams()
 
-export default function LegacySuccessRedirectPage() {
-  const router = useRouter()
-  const searchParams = useSearchParams()
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (typeof value === "string") qs.set(key, value)
+    else if (Array.isArray(value) && value.length > 0) qs.set(key, value[0] || "")
+  })
 
-  useEffect(() => {
-    const qs = searchParams.toString()
-    router.replace(`/success${qs ? `?${qs}` : ""}`)
-  }, [router, searchParams])
-
-  return null
+  redirect(`/success${qs.toString() ? `?${qs.toString()}` : ""}`)
 }
 
