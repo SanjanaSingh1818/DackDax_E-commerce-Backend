@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input"
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 
-import { orderAPI, paymentAPI } from "@/lib/api"
+import { paymentAPI } from "@/lib/api"
 import { toDisplayPrice, useCustomerType } from "@/lib/pricing"
 
 export default function CheckoutPage() {
@@ -66,44 +66,23 @@ export default function CheckoutPage() {
 
 
       /* =========================
-         STEP 1: CREATE ORDER
+         STEP 1: CREATE STRIPE CHECKOUT SESSION
       ========================== */
 
-      const orderPayload = {
+      const paymentPayload = {
 
         items: items.map(item => ({
           productId: item.id,
-          title: item.title,
-          price: toDisplayPrice(item.price, customerType),
           quantity: item.quantity,
-          image: item.image
         })),
-
-        total: subtotal,
 
         customer: form,
         customerType
 
       }
 
-
-      const orderRes = await orderAPI.create(orderPayload, token)
-
-
-      console.log("Order created:", orderRes)
-
-
-
-      /* =========================
-         STEP 2: CREATE STRIPE CHECKOUT SESSION
-      ========================== */
-
       const paymentRes = await paymentAPI.createIntent({
-
-        orderId: orderRes._id || orderRes.order?._id,
-
-        amount: subtotal,
-        currency: "sek"
+        ...paymentPayload
 
       }, token)
 

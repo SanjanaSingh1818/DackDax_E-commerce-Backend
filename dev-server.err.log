@@ -1,0 +1,71 @@
+⚠ Warning: Next.js inferred your workspace root, but it may not be correct.
+ We detected multiple lockfiles and selected the directory of D:\Dackdex backend\tyre-e-commerce-frontend\package-lock.json as the root directory.
+ To silence this warning, set `outputFileTracingRoot` in your Next.js config, or consider removing one of the lockfiles if it's not needed.
+   See https://nextjs.org/docs/app/api-reference/config/next-config-js/output#caveats for more information.
+ Detected additional lockfiles: 
+   * D:\Dackdex backend\tyre-e-commerce-frontend\DackDax_E-commerce-Backend\pnpm-lock.yaml
+
+
+[1m[33mwarn[39m[22m - The class `duration-[2000ms]` is ambiguous and matches multiple utilities.
+[1m[33mwarn[39m[22m - If this is content and not a class, replace it with `duration-&lsqb;2000ms&rsqb;` to silence this warning.
+⨯ ./app/cart/page.tsx
+Error:   x Expected '</', got 'no substitution template literal'
+     ,-[D:\Dackdex backend\tyre-e-commerce-frontend\DackDax_E-commerce-Backend\app\cart\page.tsx:422:1]
+ 419 |                     Ordersammanfattning
+ 420 |                   </h2>
+ 421 | 
+ 422 |                   <SummaryRow`r`n                    label={customerType === "privat" ? "Delsumma (inkl. moms)" : "Delsumma (exkl. moms)"}`r`n                    value={`${subtotal} kr`}`r`n                  />
+     :                              ^^^
+ 423 |                   <SummaryRow label="Frakt" value={`${shipping} kr`} />
+ 424 |                   {customerType === "privat" && (`r`n                    <SummaryRow label="Moms (25%)" value={`${tax} kr`} />`r`n                  )}
+ 424 | 
+     `----
+
+Caused by:
+    Syntax Error
+
+Import trace for requested module:
+./app/cart/page.tsx
+⨯ ./app/cart/page.tsx
+Error:   x Expected '</', got 'no substitution template literal'
+     ,-[D:\Dackdex backend\tyre-e-commerce-frontend\DackDax_E-commerce-Backend\app\cart\page.tsx:422:1]
+ 419 |                     Ordersammanfattning
+ 420 |                   </h2>
+ 421 | 
+ 422 |                   <SummaryRow`r`n                    label={customerType === "privat" ? "Delsumma (inkl. moms)" : "Delsumma (exkl. moms)"}`r`n                    value={`${subtotal} kr`}`r`n                  />
+     :                              ^^^
+ 423 |                   <SummaryRow label="Frakt" value={`${shipping} kr`} />
+ 424 |                   {customerType === "privat" && (`r`n                    <SummaryRow label="Moms (25%)" value={`${tax} kr`} />`r`n                  )}
+ 424 | 
+     `----
+
+Caused by:
+    Syntax Error
+
+Import trace for requested module:
+./app/cart/page.tsx
+⚠ Fast Refresh had to perform a full reload due to a runtime error.
+⚠ Fast Refresh had to perform a full reload due to a runtime error.
+⚠ Fast Refresh had to perform a full reload due to a runtime error.
+⨯ ./app/product/[slug]/page.tsx
+Error:   x Expected ';', got 'no substitution template literal'
+    ,-[D:\Dackdex backend\tyre-e-commerce-frontend\DackDax_E-commerce-Backend\app\product\[slug]\page.tsx:10:1]
+  7 | import { X } from "lucide-react"
+  8 | import { useCartStore } from "@/lib/cart-store"
+  9 | import { productAPI } from "@/lib/api"
+ 10 | import { mapProduct } from "@/lib/mappers"`r`nimport { toDisplayPrice, useCustomerType } from "@/lib/pricing"
+    :                                           ^^^
+ 11 | import { ChevronDown, ChevronUp } from "lucide-react"
+ 12 | import { Header } from "@/components/header"
+ 12 | import { Footer } from "@/components/footer"
+    `----
+
+Caused by:
+    Syntax Error
+
+Import trace for requested module:
+./app/product/[slug]/page.tsx
+⚠ Fast Refresh had to perform a full reload due to a runtime error.
+⚠ Fast Refresh had to perform a full reload due to a runtime error.
+⚠ Fast Refresh had to perform a full reload due to a runtime error.
+⚠ Fast Refresh had to perform a full reload due to a runtime error.
