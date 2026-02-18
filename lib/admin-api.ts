@@ -69,73 +69,96 @@ export type AdminStats = {
   topMarkets?: TopMarket[];
 };
 
-async function safeFetchJson<T>(url: string, options?: RequestInit): Promise<T | null> {
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || "https://deckdex-backend-1.onrender.com";
+
+function getToken() {
+  if (typeof window === "undefined") return "";
+  return localStorage.getItem("token") || "";
+}
+
+async function request<T>(endpoint: string, options?: RequestInit, requireAuth = false): Promise<T | null> {
+  const headers = new Headers(options?.headers || {});
+  if (requireAuth) {
+    const token = getToken();
+    if (!token) return null;
+    headers.set("Authorization", `Bearer ${token}`);
+  }
+  if (!headers.has("Content-Type") && options?.body) {
+    headers.set("Content-Type", "application/json");
+  }
+
   try {
-    const response = await fetch(url, { cache: "no-store", ...(options || {}) });
-    if (!response.ok) {
-      return null;
-    }
+    const response = await fetch(`${API_BASE}${endpoint}`, {
+      cache: "no-store",
+      ...(options || {}),
+      headers,
+    });
+    if (!response.ok) return null;
     return (await response.json()) as T;
   } catch {
     return null;
   }
 }
 
-function unwrapData<T>(payload: unknown): T | null {
-  if (!payload) return null;
-  if (typeof payload === "object" && payload !== null && "data" in payload) {
-    return ((payload as { data?: T }).data ?? null) as T | null;
-  }
-  return payload as T;
-}
-
 export async function getAdminStats() {
-  const payload = await safeFetchJson<unknown>("/api/admin/stats");
-  return unwrapData<Partial<AdminStats>>(payload);
+  return null;
 }
 
 export async function getAdminOrders() {
-  const payload = await safeFetchJson<unknown>("/api/admin/orders");
-  const data = unwrapData<unknown>(payload);
-  return Array.isArray(data) ? (data as AdminOrder[]) : null;
+  const payload = await request<unknown>("/api/orders", undefined, true);
+  return Array.isArray(payload) ? payload : null;
 }
 
 export async function getAdminRevenue() {
-  const payload = await safeFetchJson<unknown>("/api/admin/revenue");
-  const data = unwrapData<unknown>(payload);
-  return Array.isArray(data) ? (data as RevenuePoint[]) : null;
+  return null;
 }
 
 export async function getTopProducts() {
-  const payload = await safeFetchJson<unknown>("/api/admin/products/top");
-  const data = unwrapData<unknown>(payload);
-  return Array.isArray(data) ? (data as TopTyre[]) : null;
+  return null;
 }
 
 export async function getLowStockProducts() {
-  const payload = await safeFetchJson<unknown>("/api/admin/products/low-stock");
-  const data = unwrapData<unknown>(payload);
-  return Array.isArray(data) ? (data as LowStockTyre[]) : null;
+  return null;
 }
 
 export async function getAdminProducts() {
-  const payload = await safeFetchJson<unknown>("/api/admin/products");
-  const data = unwrapData<unknown>(payload);
-  return Array.isArray(data) ? (data as AdminProduct[]) : null;
+  const firstPage = await request<{
+    products?: AdminProduct[];
+    totalPages?: number;
+  }>("/api/products?page=1&limit=200");
+
+  if (!firstPage) return null;
+
+  const products = [...(firstPage.products || [])];
+  const totalPages = Number(firstPage.totalPages) || 1;
+
+  if (totalPages > 1) {
+    const calls: Promise<{ products?: AdminProduct[] } | null>[] = [];
+    for (let page = 2; page <= totalPages; page += 1) {
+      calls.push(request<{ products?: AdminProduct[] }>(`/api/products?page=${page}&limit=200`));
+    }
+    const pages = await Promise.all(calls);
+    pages.forEach((page) => products.push(...(page?.products || [])));
+  }
+
+  return products;
 }
 
 export async function getMarginSettings() {
-  const payload = await safeFetchJson<unknown>("/api/admin/settings/margin");
-  return unwrapData<MarginSettings>(payload);
+  const payload = await request<{ data?: MarginSettings }>("/api/admin/settings/margin", undefined, true);
+  return payload?.data || null;
 }
 
 export async function saveMarginSettings(defaultMargin: number) {
-  const payload = await safeFetchJson<unknown>("/api/admin/settings/margin", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ defaultMargin }),
-  });
-  return unwrapData<MarginSettings>(payload);
+  const payload = await request<{ data?: MarginSettings }>(
+    "/api/admin/settings/margin",
+    {
+      method: "POST",
+      body: JSON.stringify({ defaultMargin }),
+    },
+    true
+  );
+  return payload?.data || null;
 }
 
 export async function getMarginSetting() {

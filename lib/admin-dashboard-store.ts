@@ -7,7 +7,6 @@ import {
   type AdminOrderStatus,
   type AdminProduct,
   type AdminStats,
-  getAdminOrders,
   getAdminProducts,
   type LowStockTyre,
   type RevenuePoint,
@@ -256,14 +255,13 @@ export const useAdminDashboardStore = create<DashboardState>((set) => ({
   loadDashboard: async () => {
     set({ loading: true });
 
-    const [ordersPrimaryRes, ordersFallbackRes, productsRes, marginRes] = await Promise.all([
+    const [ordersRes, productsRes, marginRes] = await Promise.all([
       loadOrdersFromOrderApi(),
-      getAdminOrders(),
       getAdminProducts(),
       getMarginSetting(),
     ]);
 
-    const rawOrders = (ordersPrimaryRes ?? (ordersFallbackRes as unknown as RawOrder[] | null) ?? []) as RawOrder[];
+    const rawOrders = (ordersRes ?? []) as RawOrder[];
     const rawProducts = (productsRes ?? []) as AdminProduct[];
 
     const stats = calculateDashboardStats(rawOrders);

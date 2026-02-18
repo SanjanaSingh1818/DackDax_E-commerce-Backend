@@ -10,7 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
-import { orderAPI } from "@/lib/api";
+import { orderAPI, productAPI } from "@/lib/api";
 
 type RawOrder = {
   _id?: string;
@@ -21,7 +21,6 @@ type RawOrder = {
     email?: string;
     phone?: string;
   };
-  customerName?: string;
   customerName?: string;
   customerType?: "privat" | "foretag" | string;
   totalAmount?: number;
@@ -152,59 +151,37 @@ function groupOrdersIntoCustomers(orders: RawOrder[]): CustomerCsvRow[] {
 
 async function fetchOrders(): Promise<RawOrder[]> {
   const token = localStorage.getItem("token");
-  if (token) {
-    const payload = await orderAPI.getAll(token);
-    if (Array.isArray(payload)) return payload as RawOrder[];
-    if (Array.isArray((payload as { orders?: unknown[] })?.orders)) {
-      return (payload as { orders: RawOrder[] }).orders;
-    }
+  if (!token) {
+    throw new Error("Saknar inloggningstoken.");
   }
 
-  const res = await fetch("/api/admin/orders", { cache: "no-store" });
-  if (!res.ok) throw new Error("Kunde inte hamta orderdata.");
-  const payload = (await res.json()) as unknown;
-
+  const payload = await orderAPI.getAll(token);
   if (Array.isArray(payload)) return payload as RawOrder[];
-  if (Array.isArray((payload as { data?: unknown[] })?.data)) return (payload as { data: RawOrder[] }).data;
-  if (Array.isArray((payload as { orders?: unknown[] })?.orders)) return (payload as { orders: RawOrder[] }).orders;
+  if (Array.isArray((payload as { orders?: unknown[] })?.orders)) {
+    return (payload as { orders: RawOrder[] }).orders;
+  }
   return [];
 }
 
 async function fetchAllProducts(): Promise<RawProduct[]> {
-  // Future target for dedicated endpoint:
-  // GET /api/admin/products
-  try {
-    const adminRes = await fetch("/api/admin/products", { cache: "no-store" });
-    if (adminRes.ok) {
-      const payload = (await adminRes.json()) as unknown;
-      if (Array.isArray(payload)) return payload as RawProduct[];
-      if (Array.isArray((payload as { data?: unknown[] })?.data)) return (payload as { data: RawProduct[] }).data;
-      if (Array.isArray((payload as { products?: unknown[] })?.products)) {
-        return (payload as { products: RawProduct[] }).products;
-      }
-    }
-  } catch {
-    // fallback below
-  }
-
-  const first = await fetch("/api/products?page=1", { cache: "no-store" });
-  if (!first.ok) throw new Error("Kunde inte hamta produktdata.");
-  const firstPayload = (await first.json()) as { products?: RawProduct[]; totalPages?: number };
+  const firstPayload = (await productAPI.getAll({
+    page: 1,
+    limit: 200,
+  })) as { products?: RawProduct[]; totalPages?: number };
   const products = [...(firstPayload.products || [])];
   const totalPages = Number(firstPayload.totalPages) || 1;
 
   if (totalPages > 1) {
-    const pageCalls: Promise<Response>[] = [];
+    const pageCalls: Promise<{ products?: RawProduct[] }>[] = [];
     for (let page = 2; page <= totalPages; page += 1) {
-      pageCalls.push(fetch(`/api/products?page=${page}`, { cache: "no-store" }));
+      pageCalls.push(
+        productAPI.getAll({
+          page,
+          limit: 200,
+        }) as Promise<{ products?: RawProduct[] }>
+      );
     }
-    const responses = await Promise.all(pageCalls);
-    const payloads = await Promise.all(
-      responses.map(async (response) => {
-        if (!response.ok) return { products: [] as RawProduct[] };
-        return (await response.json()) as { products?: RawProduct[] };
-      })
-    );
+    const payloads = await Promise.all(pageCalls);
     payloads.forEach((payload) => products.push(...(payload.products || [])));
   }
 

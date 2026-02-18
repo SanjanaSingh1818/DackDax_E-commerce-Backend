@@ -87,7 +87,6 @@ export function groupOrdersIntoCustomers(orders: RawOrder[]): CustomerRow[] {
 }
 
 const PAGE_SIZE = 10;
-const CUSTOMER_API_PLACEHOLDER = "/api/admin/customers"; // TODO: switch to this endpoint when backend is ready
 
 export default function AdminCustomersPage() {
   const [loading, setLoading] = useState(true);
@@ -108,29 +107,12 @@ export default function AdminCustomersPage() {
           throw new Error("Saknar inloggningstoken.");
         }
 
-        let orders: unknown[] = [];
-
-        try {
-          const payload = await orderAPI.getAll(token);
-          orders = Array.isArray(payload)
-            ? payload
-            : Array.isArray((payload as { orders?: unknown[] })?.orders)
-              ? ((payload as { orders: unknown[] }).orders ?? [])
-              : [];
-        } catch {
-          const fallbackResponse = await fetch("/api/admin/orders", { cache: "no-store" });
-          if (!fallbackResponse.ok) {
-            throw new Error("Kunde inte hamta bestallningar.");
-          }
-          const fallbackPayload = (await fallbackResponse.json()) as unknown;
-          orders = Array.isArray(fallbackPayload)
-            ? fallbackPayload
-            : Array.isArray((fallbackPayload as { data?: unknown[] })?.data)
-              ? ((fallbackPayload as { data: unknown[] }).data ?? [])
-              : Array.isArray((fallbackPayload as { orders?: unknown[] })?.orders)
-                ? ((fallbackPayload as { orders: unknown[] }).orders ?? [])
-                : [];
-        }
+        const payload = await orderAPI.getAll(token);
+        const orders = Array.isArray(payload)
+          ? payload
+          : Array.isArray((payload as { orders?: unknown[] })?.orders)
+            ? ((payload as { orders: unknown[] }).orders ?? [])
+            : [];
 
         setRows(groupOrdersIntoCustomers(orders as RawOrder[]));
       } catch (err: unknown) {
@@ -278,8 +260,6 @@ export default function AdminCustomersPage() {
                 </Button>
               </div>
             </div>
-
-            <p className="text-xs text-muted-foreground">Planerat API: {CUSTOMER_API_PLACEHOLDER}</p>
           </>
         )}
       </CardContent>

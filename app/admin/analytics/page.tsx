@@ -180,29 +180,16 @@ export default function AdminAnalyticsPage() {
         setError(null);
 
         const token = localStorage.getItem("token");
-        let rows: unknown[] = [];
-
-        if (token) {
-          const payload = await orderAPI.getAll(token);
-          rows = Array.isArray(payload)
-            ? payload
-            : Array.isArray((payload as { orders?: unknown[] })?.orders)
-              ? (payload as { orders: unknown[] }).orders
-              : [];
+        if (!token) {
+          throw new Error("Saknar inloggningstoken.");
         }
 
-        if (!rows.length) {
-          const response = await fetch("/api/admin/orders", { cache: "no-store" });
-          if (!response.ok) throw new Error("Kunde inte hamta orderdata.");
-          const payload = (await response.json()) as unknown;
-          rows = Array.isArray(payload)
-            ? payload
-            : Array.isArray((payload as { data?: unknown[] })?.data)
-              ? (payload as { data: unknown[] }).data
-              : Array.isArray((payload as { orders?: unknown[] })?.orders)
-                ? (payload as { orders: unknown[] }).orders
-                : [];
-        }
+        const payload = await orderAPI.getAll(token);
+        const rows = Array.isArray(payload)
+          ? payload
+          : Array.isArray((payload as { orders?: unknown[] })?.orders)
+            ? (payload as { orders: unknown[] }).orders
+            : [];
 
         setOrders(rows as RawOrder[]);
       } catch (err: unknown) {

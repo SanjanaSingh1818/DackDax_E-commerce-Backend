@@ -10,6 +10,7 @@ import {
   Package,
   Settings,
   ShoppingCart,
+  Upload,
   Users,
   X,
   type LucideIcon,
@@ -34,6 +35,7 @@ const sidebarItems: SidebarItem[] = [
   { label: "Kunder", href: "/admin/customers", icon: Users },
   { label: "Analys", href: "/admin/analytics", icon: BarChart3 },
   { label: "Rapporter", href: "/admin/reports", icon: FileText },
+  { label: "CSV Upload", href: "/admin/upload", icon: Upload },
   { label: "Installningar", href: "/admin/settings", icon: Settings },
   { label: "Logga ut", icon: LogOut, isLogout: true },
 ];

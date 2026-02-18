@@ -1,24 +1,38 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
-export async function GET() {
-  return NextResponse.json({
-    data: [
-      {
-        _id: "ORD-1001",
-        customerName: "Erik Larsson",
-        productName: "Michelin Pilot Sport 5",
-        createdAt: "2026-02-15T09:10:00.000Z",
-        totalAmount: 3490,
-        status: "completed",
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || "https://deckdex-backend-1.onrender.com";
+
+export async function GET(request: NextRequest) {
+  try {
+    const authHeader = request.headers.get("authorization");
+    if (!authHeader) {
+      return NextResponse.json({ error: "Missing authorization header." }, { status: 401 });
+    }
+
+    const response = await fetch(`${API_BASE}/api/orders`, {
+      cache: "no-store",
+      headers: {
+        Authorization: authHeader,
       },
-      {
-        _id: "ORD-1002",
-        customerName: "Anna Svensson",
-        productName: "Pirelli Cinturato P7",
-        createdAt: "2026-02-16T10:20:00.000Z",
-        totalAmount: 2890,
-        status: "pending",
-      },
-    ],
-  });
+    });
+
+    const payload = (await response.json().catch(() => [])) as unknown;
+
+    if (!response.ok) {
+      return NextResponse.json(
+        { error: "Failed to fetch orders from backend.", details: payload },
+        { status: response.status }
+      );
+    }
+
+    const rows = Array.isArray(payload)
+      ? payload
+      : Array.isArray((payload as { orders?: unknown[] })?.orders)
+        ? (payload as { orders: unknown[] }).orders
+        : [];
+
+    return NextResponse.json({ data: rows });
+  } catch {
+    return NextResponse.json({ error: "Internal server error." }, { status: 500 });
+  }
 }

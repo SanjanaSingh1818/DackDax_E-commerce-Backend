@@ -101,7 +101,7 @@ export default function AdminDashboardPage() {
         />
         <StatCard
           title="Totalt salda dack"
-          value={stats.totalTyresSold.toLocaleString("sv-SE")}
+          value={stats.totalOrders.toLocaleString("sv-SE")}
           growth={stats.tyresGrowth}
           icon={ShoppingBag}
           indicatorClassName="bg-orange-500"
@@ -114,7 +114,7 @@ export default function AdminDashboardPage() {
         </div>
         <SalesChart
           salesPercentage={stats.salesPercentage}
-          totalSales={stats.totalSalesNumber}
+          totalSales={stats.totalOrders}
           totalRevenue={stats.totalRevenue}
         />
       </section>
