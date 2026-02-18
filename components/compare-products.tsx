@@ -46,9 +46,9 @@ export function CompareProducts() {
         <h1 className="text-center text-3xl font-black tracking-tight text-neutral-900">JAMFOR PRODUKTER</h1>
       </div>
 
-      <div className="mb-6 flex items-center justify-between border-b border-[#3B82F6] pb-2">
+      <div className="mb-6 flex items-center justify-between border-b border-[#d4af37] pb-2">
         <div className="flex items-center gap-6 text-xl font-semibold text-neutral-700">
-          <span className="text-[#2563EB]">Dack ({items.length})</span>
+          <span className="text-[#d4af37]">Dack ({items.length})</span>
           <span>Falgar (0)</span>
         </div>
 

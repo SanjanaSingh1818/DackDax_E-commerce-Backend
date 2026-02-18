@@ -1,398 +1,129 @@
-"use client"
-
-import { useEffect, useState } from "react"
-
-import {
-  Package,
-  ShoppingCart,
-  DollarSign,
-  TrendingUp,
-  Calendar
-} from "lucide-react"
-
-import {
-  ResponsiveContainer,
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  Tooltip,
-  CartesianGrid,
-  BarChart,
-  Bar
-} from "recharts"
-
-import { productAPI } from "@/lib/api"
-
-
-
-export default function AdminDashboard(){
-
-  const [loading,setLoading] = useState(true)
-
-  const [stats,setStats] = useState({
-
-    products: 0,
-    orders: 0,
-    revenue: 0
-
-  })
-
-  const [dailyData,setDailyData] = useState<any[]>([])
-  const [monthlyData,setMonthlyData] = useState<any[]>([])
-
-
-
-  useEffect(()=>{
-
-    loadStats()
-
-  },[])
-
-
-
-  async function loadStats(){
-
-    try{
-
-      const token = localStorage.getItem("token")
-
-
-
-      /* PRODUCTS */
-
-      const productRes = await productAPI.getAll({
-
-        page: 1,
-        limit: 1
-
-      })
-
-      const productCount = productRes.total || 0
-
-
-
-      /* ORDERS */
-
-      let ordersCount = 0
-      let revenue = 0
-
-      let daily:any = {}
-      let monthly:any = {}
-
-
-
-      try{
-
-        const res = await fetch(
-
-          `${process.env.NEXT_PUBLIC_API_URL}/api/orders`,
-
-          {
-            headers:{
-              Authorization:`Bearer ${token}`
-            }
-          }
-
-        )
-
-        if(res.ok){
-
-          const orderData = await res.json()
-
-          ordersCount = orderData.length || 0
-
-
-
-          orderData.forEach((order:any)=>{
-
-            const amount = Number(order.total) || 0
-
-            revenue += amount
-
-
-
-            /* Fix date parsing */
-
-            const dateObj = order.createdAt
-              ? new Date(order.createdAt)
-              : new Date()
-
-
-
-            const day =
-              dateObj.toLocaleDateString("sv-SE")
-
-            const month =
-              dateObj.toLocaleDateString("sv-SE",{
-                year:"numeric",
-                month:"short"
-              })
-
-
-
-            /* Daily */
-
-            if(!daily[day]) daily[day] = 0
-            daily[day] += amount
-
-
-
-            /* Monthly */
-
-            if(!monthly[month]) monthly[month] = 0
-            monthly[month] += amount
-
-          })
-
-
-
-          /* Convert to arrays */
-
-          const dailyArray =
-            Object.keys(daily).map(date=>({
-
-              date,
-              revenue: daily[date]
-
-            }))
-
-          const monthlyArray =
-            Object.keys(monthly).map(month=>({
-
-              month,
-              revenue: monthly[month]
-
-            }))
-
-
-
-          setDailyData(dailyArray)
-          setMonthlyData(monthlyArray)
-
-        }
-
-      }catch(err){
-
-        console.error(err)
-
+"use client";
+
+import { useEffect, useState } from "react";
+import { CircleDollarSign, ShoppingBag, ShoppingCart, Users } from "lucide-react";
+
+import OrdersTable from "@/components/admin/OrdersTable";
+import RevenueChart from "@/components/admin/RevenueChart";
+import SalesChart from "@/components/admin/SalesChart";
+import StatCard from "@/components/admin/StatCard";
+import TopMarkets from "@/components/admin/TopMarkets";
+import TopProducts from "@/components/admin/TopProducts";
+import { Skeleton } from "@/components/ui/skeleton";
+import { formatSEK } from "@/lib/currency";
+import { useAdminDashboardStore } from "@/lib/admin-dashboard-store";
+
+function DashboardSkeleton() {
+  return (
+    <div className="space-y-6">
+      <Skeleton className="h-32 w-full rounded-xl" />
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <Skeleton className="h-36 rounded-xl" />
+        <Skeleton className="h-36 rounded-xl" />
+        <Skeleton className="h-36 rounded-xl" />
+        <Skeleton className="h-36 rounded-xl" />
+      </div>
+      <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
+        <Skeleton className="h-[360px] rounded-xl xl:col-span-2" />
+        <Skeleton className="h-[360px] rounded-xl" />
+      </div>
+      <Skeleton className="h-[340px] rounded-xl" />
+      <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
+        <Skeleton className="h-[280px] rounded-xl" />
+        <Skeleton className="h-[280px] rounded-xl" />
+      </div>
+    </div>
+  );
+}
+
+export default function AdminDashboardPage() {
+  const [adminName, setAdminName] = useState("Admin");
+  const { loading, stats, orders, revenue, topTyres, topMarkets, loadDashboard } = useAdminDashboardStore();
+
+  useEffect(() => {
+    const userString = localStorage.getItem("user");
+    if (userString) {
+      try {
+        const user = JSON.parse(userString);
+        setAdminName(user?.name || user?.fullName || "Admin");
+      } catch {
+        setAdminName("Admin");
       }
-
-
-
-      setStats({
-
-        products: productCount,
-        orders: ordersCount,
-        revenue
-
-      })
-
-
-
-    }catch(err){
-
-      console.error(err)
-
-    }finally{
-
-      setLoading(false)
-
     }
+    void loadDashboard();
+  }, [loadDashboard]);
 
+  const formattedDate = new Date().toLocaleDateString("sv-SE", {
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+
+  if (loading) {
+    return <DashboardSkeleton />;
   }
 
-
-
-  if(loading){
-
-    return <div>Loading dashboard...</div>
-
-  }
-
-
-
-  return(
-
-    <div className="space-y-8">
-
-
-      {/* Header */}
-
-      <div>
-
-        <h1 className="text-3xl font-bold">
-          Dashboard
-        </h1>
-
-        <p className="text-gray-500">
-          Store analytics overview
+  return (
+    <div className="space-y-6">
+      <section className="rounded-xl border border-slate-200 bg-gradient-to-r from-teal-700 to-cyan-700 p-6 text-white shadow-sm">
+        <h1 className="text-2xl font-semibold tracking-tight md:text-3xl">Valkommen tillbaka, {adminName}</h1>
+        <p className="mt-1 text-sm text-white/90">{formattedDate}</p>
+        <p className="mt-3 text-sm text-white/80">
+          Har ar en snabb oversikt av DackDax senaste resultat.
         </p>
+      </section>
 
-      </div>
-
-
-
-      {/* Stats */}
-
-      <div className="
-        grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6
-      ">
-
+      <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard
-          title="Products"
-          value={stats.products}
-          icon={Package}
-          color="bg-blue-500"
+          title="Total omsattning"
+          value={formatSEK(stats.totalRevenue)}
+          growth={stats.revenueGrowth}
+          icon={CircleDollarSign}
+          indicatorClassName="bg-teal-500"
         />
-
         <StatCard
-          title="Orders"
-          value={stats.orders}
+          title="Totala bestallningar"
+          value={stats.totalOrders.toLocaleString("sv-SE")}
+          growth={stats.ordersGrowth}
           icon={ShoppingCart}
-          color="bg-purple-500"
+          indicatorClassName="bg-blue-500"
         />
-
         <StatCard
-          title="Revenue"
-          value={`${stats.revenue} kr`}
-          icon={DollarSign}
-          color="bg-green-500"
+          title="Totala kunder"
+          value={stats.totalCustomers.toLocaleString("sv-SE")}
+          growth={stats.customersGrowth}
+          icon={Users}
+          indicatorClassName="bg-violet-500"
         />
+        <StatCard
+          title="Totalt salda dack"
+          value={stats.totalTyresSold.toLocaleString("sv-SE")}
+          growth={stats.tyresGrowth}
+          icon={ShoppingBag}
+          indicatorClassName="bg-orange-500"
+        />
+      </section>
 
-      </div>
-
-
-
-      {/* Daily Chart */}
-
-      <ChartCard
-        title="Daily Revenue"
-        icon={TrendingUp}
-      >
-
-        <ResponsiveContainer width="100%" height={300}>
-
-          <LineChart data={dailyData}>
-
-            <CartesianGrid strokeDasharray="3 3"/>
-
-            <XAxis dataKey="date"/>
-
-            <YAxis/>
-
-            <Tooltip/>
-
-            <Line
-              type="monotone"
-              dataKey="revenue"
-              stroke="#D4AF37"
-              strokeWidth={3}
-            />
-
-          </LineChart>
-
-        </ResponsiveContainer>
-
-      </ChartCard>
-
-
-
-      {/* Monthly Chart */}
-
-      <ChartCard
-        title="Monthly Revenue"
-        icon={Calendar}
-      >
-
-        <ResponsiveContainer width="100%" height={300}>
-
-          <BarChart data={monthlyData}>
-
-            <CartesianGrid strokeDasharray="3 3"/>
-
-            <XAxis dataKey="month"/>
-
-            <YAxis/>
-
-            <Tooltip/>
-
-            <Bar
-              dataKey="revenue"
-              fill="#D4AF37"
-              radius={[4,4,0,0]}
-            />
-
-          </BarChart>
-
-        </ResponsiveContainer>
-
-      </ChartCard>
-
-
-
-    </div>
-
-  )
-
-}
-
-
-
-/* Stat Card */
-
-function StatCard({title,value,icon:Icon,color}:any){
-
-  return(
-
-    <div className="bg-white p-6 rounded-xl shadow flex justify-between items-center">
-
-      <div>
-
-        <div className="text-gray-500 text-sm">
-          {title}
+      <section className="grid grid-cols-1 gap-4 xl:grid-cols-3">
+        <div className="xl:col-span-2">
+          <RevenueChart data={revenue} />
         </div>
+        <SalesChart
+          salesPercentage={stats.salesPercentage}
+          totalSales={stats.totalSalesNumber}
+          totalRevenue={stats.totalRevenue}
+        />
+      </section>
 
-        <div className="text-2xl font-bold">
-          {value}
-        </div>
+      <section>
+        <OrdersTable rows={orders} />
+      </section>
 
-      </div>
-
-      <div className={`${color} text-white p-3 rounded-lg`}>
-        <Icon size={20}/>
-      </div>
-
+      <section className="grid grid-cols-1 gap-4 xl:grid-cols-2">
+        <TopProducts items={topTyres} />
+        <TopMarkets items={topMarkets} />
+      </section>
     </div>
-
-  )
-
-}
-
-
-
-/* Chart Card */
-
-function ChartCard({title,icon:Icon,children}:any){
-
-  return(
-
-    <div className="bg-white p-6 rounded-xl shadow border">
-
-      <div className="flex items-center gap-2 mb-4">
-
-        <Icon className="text-[#D4AF37]"/>
-
-        <h2 className="font-semibold">
-          {title}
-        </h2>
-
-      </div>
-
-      {children}
-
-    </div>
-
-  )
-
+  );
 }

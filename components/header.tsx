@@ -69,7 +69,6 @@ useEffect(() => {
     setMounted(true)
   }, [])
 
-
   /* Logout */
 function handleLogout() {
 
@@ -82,8 +81,6 @@ function handleLogout() {
   window.location.reload()
 
 }
-
-
 
   return (
 
