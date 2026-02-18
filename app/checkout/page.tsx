@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 
 import { useState } from "react"
+import { useEffect } from "react"
 import { useRouter } from "next/navigation"
 
 import { paymentAPI } from "@/lib/api"
@@ -33,6 +34,25 @@ export default function CheckoutPage() {
     city: "",
     postalCode: ""
   })
+
+  useEffect(() => {
+    if (typeof window === "undefined") return
+
+    const userRaw = localStorage.getItem("user")
+    if (!userRaw) return
+
+    try {
+      const user = JSON.parse(userRaw) as { name?: string; fullName?: string; email?: string }
+
+      setForm((prev) => ({
+        ...prev,
+        name: user?.name || user?.fullName || prev.name,
+        email: user?.email || prev.email,
+      }))
+    } catch {
+      // ignore invalid stored user payload
+    }
+  }, [])
 
 
   const handleChange = (e:any) => {
