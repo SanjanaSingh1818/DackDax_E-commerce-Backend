@@ -28,6 +28,11 @@ const statusLabelMap = {
   Cancelled: "Avbruten",
 };
 
+const customerTypeLabelMap = {
+  privat: "Privat",
+  foretag: "Foretag",
+};
+
 export default function OrdersTable({ rows }: { rows: AdminOrder[] }) {
   const escapeHtml = (value: string) =>
     value
@@ -81,7 +86,9 @@ export default function OrdersTable({ rows }: { rows: AdminOrder[] }) {
     link.download = `faktura-${order.orderId.replace(/[^a-zA-Z0-9-]/g, "")}.html`;
     document.body.appendChild(link);
     link.click();
-    link.remove();
+    if (link.parentNode) {
+      link.parentNode.removeChild(link);
+    }
     URL.revokeObjectURL(url);
   };
 
@@ -96,10 +103,10 @@ export default function OrdersTable({ rows }: { rows: AdminOrder[] }) {
             <TableRow>
               <TableHead>Ordernummer</TableHead>
               <TableHead>Kund</TableHead>
-              <TableHead>Produkt</TableHead>
-              <TableHead>Datum</TableHead>
+              <TableHead>Kundtyp</TableHead>
               <TableHead>Pris</TableHead>
               <TableHead>Status</TableHead>
+              <TableHead>Datum</TableHead>
               <TableHead>Faktura</TableHead>
             </TableRow>
           </TableHeader>
@@ -115,14 +122,18 @@ export default function OrdersTable({ rows }: { rows: AdminOrder[] }) {
                 <TableRow key={order.orderId}>
                   <TableCell className="font-medium">{order.orderId}</TableCell>
                   <TableCell>{order.customerName}</TableCell>
-                  <TableCell>{order.productName}</TableCell>
-                  <TableCell>{order.date}</TableCell>
+                  <TableCell>
+                    <Badge variant="outline">
+                      {customerTypeLabelMap[order.customerType || "privat"]}
+                    </Badge>
+                  </TableCell>
                   <TableCell>{formatSEK(order.price)}</TableCell>
                   <TableCell>
                     <Badge className={statusClassMap[order.status]}>
                       {statusLabelMap[order.status]}
                     </Badge>
                   </TableCell>
+                  <TableCell>{order.date}</TableCell>
                   <TableCell>
                     <Button
                       variant="outline"

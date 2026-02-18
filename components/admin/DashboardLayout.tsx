@@ -18,13 +18,13 @@ import { MobileSidebar, Sidebar, type SidebarItem } from "@/components/admin/Sid
 import { Button } from "@/components/ui/button";
 
 const navItems: SidebarItem[] = [
-  { label: "Dashboard", href: "/admin", icon: LayoutDashboard },
-  { label: "Products", href: "/admin/products", icon: Package },
-  { label: "Orders & Invoices", href: "/admin/orders", icon: ShoppingCart },
-  { label: "Customers", href: "/admin/customers", icon: Users },
-  { label: "Analytics", href: "/admin/analytics", icon: BarChart3 },
-  { label: "Reports", href: "/admin/reports", icon: FileText },
-  { label: "Settings", href: "/admin/settings", icon: Settings },
+  { label: "Instrumentpanel", href: "/admin", icon: LayoutDashboard },
+  { label: "Produkter", href: "/admin/products", icon: Package },
+  { label: "Bestallningar & Fakturor", href: "/admin/orders", icon: ShoppingCart },
+  { label: "Kunder", href: "/admin/customers", icon: Users },
+  { label: "Analys", href: "/admin/analytics", icon: BarChart3 },
+  { label: "Rapporter", href: "/admin/reports", icon: FileText },
+  { label: "Installningar", href: "/admin/settings", icon: Settings },
 ];
 
 export default function DashboardLayout({ children }: { children: ReactNode }) {
@@ -63,7 +63,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
         className="rounded-xl"
         onClick={() => setMobileSidebarOpen(true)}
       >
-        <span className="sr-only">Open menu</span>
+        <span className="sr-only">Oppna meny</span>
         <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor">
           <path d="M3 6h18M3 12h18M3 18h18" strokeWidth="1.8" strokeLinecap="round" />
         </svg>
@@ -76,7 +76,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
         <div className="rounded-xl border bg-card px-4 py-3 text-sm text-muted-foreground shadow-sm">
-          Loading Admin Dashboard...
+          Laddar adminpanel...
         </div>
       </div>
     );

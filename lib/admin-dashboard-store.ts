@@ -5,14 +5,43 @@ import { create } from "zustand";
 import {
   type AdminOrder,
   type AdminOrderStatus,
+  type AdminProduct,
   type AdminStats,
   getAdminOrders,
-  getAdminRevenue,
-  getAdminStats,
+  getAdminProducts,
+  type LowStockTyre,
   type RevenuePoint,
-  type TopMarket,
   type TopTyre,
+  getMarginSetting,
+  updateMarginSetting,
 } from "@/lib/admin-api";
+import { orderAPI } from "@/lib/api";
+
+type RawOrder = {
+  _id?: string;
+  id?: string;
+  orderId?: string;
+  customer?: {
+    name?: string;
+    email?: string;
+  };
+  customerName?: string;
+  customerType?: "privat" | "foretag" | string;
+  totalAmount?: number;
+  total?: number;
+  amount?: number;
+  createdAt?: string;
+  status?: string;
+  orderStatus?: string;
+  paymentStatus?: string;
+  items?: Array<{
+    productId?: string;
+    quantity?: number;
+    price?: number;
+    name?: string;
+    title?: string;
+  }>;
+};
 
 type DashboardState = {
   loading: boolean;
@@ -20,24 +49,12 @@ type DashboardState = {
   orders: AdminOrder[];
   revenue: RevenuePoint[];
   topTyres: TopTyre[];
-  topMarkets: TopMarket[];
+  lowStockTyres: LowStockTyre[];
+  margin: number;
+  marginSaving: boolean;
   loadDashboard: () => Promise<void>;
+  updateMargin: (nextMargin: number) => Promise<void>;
 };
-
-const monthFallback: RevenuePoint[] = [
-  { month: "Jan", revenue: 0 },
-  { month: "Feb", revenue: 0 },
-  { month: "Mar", revenue: 0 },
-  { month: "Apr", revenue: 0 },
-  { month: "May", revenue: 0 },
-  { month: "Jun", revenue: 0 },
-  { month: "Jul", revenue: 0 },
-  { month: "Aug", revenue: 0 },
-  { month: "Sep", revenue: 0 },
-  { month: "Oct", revenue: 0 },
-  { month: "Nov", revenue: 0 },
-  { month: "Dec", revenue: 0 },
-];
 
 const emptyStats: AdminStats = {
   totalRevenue: 0,
@@ -52,132 +69,225 @@ const emptyStats: AdminStats = {
   totalSalesNumber: 0,
 };
 
-const defaultTopTyres: TopTyre[] = [
-  { name: "Michelin Pilot Sport 5", salesCount: 0, revenue: 0 },
-  { name: "Pirelli Cinturato P7", salesCount: 0, revenue: 0 },
-  { name: "Bridgestone Turanza T005", salesCount: 0, revenue: 0 },
-];
-
-const defaultTopMarkets: TopMarket[] = [
-  { country: "United States", countryCode: "us", revenue: 0, growth: 0 },
-  { country: "Germany", countryCode: "de", revenue: 0, growth: 0 },
-  { country: "United Kingdom", countryCode: "gb", revenue: 0, growth: 0 },
-  { country: "Sweden", countryCode: "se", revenue: 0, growth: 0 },
-];
+function getOrderAmount(order: RawOrder) {
+  return Number(order.totalAmount) || Number(order.total) || Number(order.amount) || 0;
+}
 
 function normalizeStatus(status: unknown): AdminOrderStatus {
-  if (typeof status === "number") {
-    if (status === 1) return "Completed";
-    if (status === 2) return "Cancelled";
-    return "Pending";
+  const value = String(status || "").toLowerCase().trim();
+  if (["completed", "complete", "paid", "delivered", "slutford", "fardig"].includes(value)) {
+    return "Completed";
   }
-
-  const value = String(status ?? "").toLowerCase().trim();
-
-  if (value === "completed") return "Completed";
-  if (value === "complete") return "Completed";
-  if (value === "paid") return "Completed";
-  if (value === "delivered") return "Completed";
-  if (value === "slutford") return "Completed";
-  if (value === "fardig") return "Completed";
-
-  if (value === "pending") return "Pending";
-  if (value === "processing") return "Pending";
-  if (value === "new") return "Pending";
-  if (value === "under behandling") return "Pending";
-  if (value === "vantar") return "Pending";
-
-  if (value === "cancelled" || value === "canceled") return "Cancelled";
-  if (value === "annullerad") return "Cancelled";
+  if (["cancelled", "canceled", "annullerad"].includes(value)) {
+    return "Cancelled";
+  }
   return "Pending";
 }
 
-function normalizeOrders(rows: AdminOrder[] | null): AdminOrder[] {
-  if (!rows?.length) return [];
-  return rows.slice(0, 8).map((row, index) => {
-    const anyRow = row as unknown as Record<string, unknown>;
+function monthKey(dateString?: string) {
+  if (!dateString) return "";
+  const date = new Date(dateString);
+  if (Number.isNaN(date.getTime())) return "";
+  return `${date.getFullYear()}-${`${date.getMonth() + 1}`.padStart(2, "0")}`;
+}
 
-    const orderId =
-      (typeof anyRow.orderId === "string" && anyRow.orderId) ||
-      (typeof anyRow.id === "string" && anyRow.id) ||
-      (typeof anyRow._id === "string" && anyRow._id) ||
-      `#ORD-${1000 + index}`;
-
-    const nestedCustomer =
-      (anyRow.customer as Record<string, unknown> | undefined) ||
-      (anyRow.user as Record<string, unknown> | undefined);
-    const customerName =
-      (typeof anyRow.customerName === "string" && anyRow.customerName) ||
-      (typeof nestedCustomer?.name === "string" && nestedCustomer.name) ||
-      (typeof nestedCustomer?.email === "string" && nestedCustomer.email) ||
-      "Okänd kund";
-
-    const items = Array.isArray(anyRow.items) ? anyRow.items : [];
-    const firstItem = (items[0] as Record<string, unknown> | undefined) || {};
-    const productName =
-      (typeof anyRow.productName === "string" && anyRow.productName) ||
-      (typeof anyRow.product === "string" && anyRow.product) ||
-      (typeof firstItem.name === "string" && firstItem.name) ||
-      (typeof firstItem.title === "string" && firstItem.title) ||
-      "Däck";
-
-    const dateRaw =
-      (typeof anyRow.date === "string" && anyRow.date) ||
-      (typeof anyRow.createdAt === "string" && anyRow.createdAt) ||
-      "";
-    const date = dateRaw
-      ? new Date(dateRaw).toLocaleDateString("sv-SE")
-      : new Date().toLocaleDateString("sv-SE");
-
-    const price =
-      Number(anyRow.price) ||
-      Number(anyRow.totalAmount) ||
-      Number(anyRow.total) ||
-      Number(anyRow.amount) ||
-      0;
-
-    const statusSource = anyRow.status ?? anyRow.orderStatus ?? anyRow.paymentStatus;
-
-    return {
-      orderId,
-      customerName,
-      productName,
-      date,
-      price,
-      status: normalizeStatus(statusSource),
-      countryCode: typeof anyRow.countryCode === "string" ? anyRow.countryCode : undefined,
-    };
+function monthLabel(key: string) {
+  const [year, month] = key.split("-").map(Number);
+  return new Date(year, month - 1, 1).toLocaleDateString("sv-SE", {
+    month: "short",
+    year: "numeric",
   });
+}
+
+export function calculateDashboardStats(orders: RawOrder[]): AdminStats {
+  const totalRevenue = orders.reduce((sum, order) => sum + getOrderAmount(order), 0);
+  const totalOrders = orders.length;
+  const customerEmails = new Set(
+    orders
+      .map((order) => String(order.customer?.email || "").trim().toLowerCase())
+      .filter(Boolean)
+  );
+  const totalTyresSold = orders.reduce((sum, order) => {
+    const qty = (order.items || []).reduce((q, item) => q + (Number(item.quantity) || 0), 0);
+    return sum + qty;
+  }, 0);
+
+  const salesPercentage = totalTyresSold > 0 ? Math.min(100, (totalOrders / totalTyresSold) * 100) : 0;
+
+  return {
+    ...emptyStats,
+    totalRevenue,
+    totalOrders,
+    totalCustomers: customerEmails.size,
+    totalTyresSold,
+    totalSalesNumber: totalTyresSold,
+    salesPercentage,
+    revenueGrowth: 0,
+    ordersGrowth: 0,
+    customersGrowth: 0,
+    tyresGrowth: 0,
+    topTyres: [],
+    topMarkets: [],
+  };
+}
+
+export function calculateMonthlyRevenue(orders: RawOrder[]): RevenuePoint[] {
+  const map = new Map<string, number>();
+  orders.forEach((order) => {
+    const key = monthKey(order.createdAt);
+    if (!key) return;
+    map.set(key, (map.get(key) || 0) + getOrderAmount(order));
+  });
+
+  return Array.from(map.entries())
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([month, revenue]) => ({ month: monthLabel(month), revenue }));
+}
+
+export function calculateTopProducts(orders: RawOrder[], products: AdminProduct[]): TopTyre[] {
+  const productMeta = new Map<string, { name: string; image?: string }>();
+  products.forEach((product) => {
+    const id = String(product.id || product._id || "").trim();
+    if (!id) return;
+    productMeta.set(id, {
+      name: String(product.title || product.name || id),
+      image: undefined,
+    });
+  });
+
+  const grouped = new Map<string, { salesCount: number; revenue: number }>();
+
+  orders.forEach((order) => {
+    (order.items || []).forEach((item) => {
+      const productId = String(item.productId || "").trim();
+      if (!productId) return;
+      const quantity = Number(item.quantity) || 0;
+      const itemRevenue = (Number(item.price) || 0) * quantity;
+      const current = grouped.get(productId) || { salesCount: 0, revenue: 0 };
+      grouped.set(productId, {
+        salesCount: current.salesCount + quantity,
+        revenue: current.revenue + itemRevenue,
+      });
+    });
+  });
+
+  return Array.from(grouped.entries())
+    .map(([productId, values]) => {
+      const meta = productMeta.get(productId);
+      return {
+        name: meta?.name || productId,
+        image: meta?.image,
+        salesCount: values.salesCount,
+        revenue: values.revenue,
+      };
+    })
+    .sort((a, b) => b.salesCount - a.salesCount)
+    .slice(0, 5);
+}
+
+export function calculateRecentOrders(orders: RawOrder[]): AdminOrder[] {
+  return orders
+    .slice()
+    .sort((a, b) => {
+      const aTime = new Date(a.createdAt || 0).getTime();
+      const bTime = new Date(b.createdAt || 0).getTime();
+      return bTime - aTime;
+    })
+    .slice(0, 10)
+    .map((order, index) => {
+      const firstItem = (order.items || [])[0];
+      const dateRaw = order.createdAt || new Date().toISOString();
+      return {
+        orderId: String(order.orderId || order.id || order._id || `#ORD-${1000 + index}`),
+        customerName: String(order.customer?.name || order.customerName || "Okand kund"),
+        customerEmail: String(order.customer?.email || ""),
+        customerType: String(order.customerType || "privat").toLowerCase() === "foretag" ? "foretag" : "privat",
+        productName: String(firstItem?.name || firstItem?.title || "Dack"),
+        date: new Date(dateRaw).toLocaleDateString("sv-SE"),
+        price: getOrderAmount(order),
+        status: normalizeStatus(order.status ?? order.orderStatus ?? order.paymentStatus),
+      };
+    });
+}
+
+function calculateLowStockTyres(products: AdminProduct[]): LowStockTyre[] {
+  return products
+    .map((product, index) => {
+      const anyProduct = product as Record<string, unknown>;
+      const stock =
+        Number(product.stock) ||
+        Number(product.quantity) ||
+        Number(anyProduct.inventory) ||
+        Number(anyProduct.inStock);
+      return {
+        id: String(product.id || product._id || `low-${index}`),
+        name: String(product.title || product.name || "Produkt"),
+        stock,
+        threshold: 10,
+      };
+    })
+    .filter((product) => Number.isFinite(product.stock) && product.stock >= 0)
+    .filter((product) => product.stock < 10)
+    .sort((a, b) => a.stock - b.stock);
+}
+
+async function loadOrdersFromOrderApi(): Promise<RawOrder[] | null> {
+  try {
+    const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+    if (!token) return null;
+    const response = await orderAPI.getAll(token);
+    if (Array.isArray(response)) return response as RawOrder[];
+    if (Array.isArray(response?.orders)) return response.orders as RawOrder[];
+    return null;
+  } catch {
+    return null;
+  }
 }
 
 export const useAdminDashboardStore = create<DashboardState>((set) => ({
   loading: true,
   stats: emptyStats,
   orders: [],
-  revenue: monthFallback,
-  topTyres: defaultTopTyres,
-  topMarkets: defaultTopMarkets,
+  revenue: [],
+  topTyres: [],
+  lowStockTyres: [],
+  margin: 0,
+  marginSaving: false,
   loadDashboard: async () => {
     set({ loading: true });
 
-    const [statsRes, ordersRes, revenueRes] = await Promise.all([
-      getAdminStats(),
+    const [ordersPrimaryRes, ordersFallbackRes, productsRes, marginRes] = await Promise.all([
+      loadOrdersFromOrderApi(),
       getAdminOrders(),
-      getAdminRevenue(),
+      getAdminProducts(),
+      getMarginSetting(),
     ]);
 
-    const mergedStats: AdminStats = {
-      ...emptyStats,
-      ...(statsRes ?? {}),
-    };
+    const rawOrders = (ordersPrimaryRes ?? (ordersFallbackRes as unknown as RawOrder[] | null) ?? []) as RawOrder[];
+    const rawProducts = (productsRes ?? []) as AdminProduct[];
+
+    const stats = calculateDashboardStats(rawOrders);
+    const revenue = calculateMonthlyRevenue(rawOrders);
+    const topTyres = calculateTopProducts(rawOrders, rawProducts);
+    const orders = calculateRecentOrders(rawOrders);
+    const lowStockTyres = calculateLowStockTyres(rawProducts);
 
     set({
       loading: false,
-      stats: mergedStats,
-      orders: normalizeOrders(ordersRes),
-      revenue: revenueRes?.length ? revenueRes : monthFallback,
-      topTyres: statsRes?.topTyres?.length ? statsRes.topTyres : defaultTopTyres,
-      topMarkets: statsRes?.topMarkets?.length ? statsRes.topMarkets : defaultTopMarkets,
+      stats,
+      orders,
+      revenue,
+      topTyres,
+      lowStockTyres,
+      margin: Number(marginRes?.defaultMargin) || 0,
+    });
+  },
+  updateMargin: async (nextMargin: number) => {
+    set({ marginSaving: true });
+    const payload = await updateMarginSetting(nextMargin);
+    set({
+      marginSaving: false,
+      margin: Number(payload?.defaultMargin) || nextMargin || 0,
     });
   },
 }));

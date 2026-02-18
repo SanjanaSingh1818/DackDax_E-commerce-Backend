@@ -29,7 +29,7 @@ const SALES_COLORS = ["#16a34a", "#e5e7eb"];
 
 export function ProfitOverviewChart({ data }: { data: RevenueItem[] }) {
   return (
-    <ChartCard title="Profit Overview" contentClassName="h-[320px]">
+    <ChartCard title="Vinstoversikt" contentClassName="h-[320px]">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={data} barSize={18}>
             <XAxis dataKey="month" axisLine={false} tickLine={false} />
@@ -39,7 +39,7 @@ export function ProfitOverviewChart({ data }: { data: RevenueItem[] }) {
               contentStyle={{ borderRadius: "0.8rem", borderColor: "#e2e8f0" }}
             />
             <Legend />
-            <Bar dataKey="revenue" name="Revenue" radius={[8, 8, 0, 0]} fill="#0f766e" />
+            <Bar dataKey="revenue" name="Omsattning" radius={[8, 8, 0, 0]} fill="#0f766e" />
           </BarChart>
         </ResponsiveContainer>
     </ChartCard>
@@ -48,7 +48,7 @@ export function ProfitOverviewChart({ data }: { data: RevenueItem[] }) {
 
 export function SalesPerformanceCard() {
   return (
-    <ChartCard title="Sales Performance">
+    <ChartCard title="Saljprestanda">
         <div className="mx-auto h-[220px] w-full max-w-[260px]">
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
@@ -74,15 +74,15 @@ export function SalesPerformanceCard() {
         </div>
         <div className="-mt-20 text-center">
           <p className="text-3xl font-semibold tracking-tight">78%</p>
-          <p className="text-sm text-muted-foreground">Target Completion</p>
+          <p className="text-sm text-muted-foreground">Uppfyllnad av mal</p>
         </div>
         <div className="mt-10 grid grid-cols-2 gap-3">
           <div className="rounded-xl border bg-muted/40 p-3 text-center">
-            <p className="text-xs text-muted-foreground">Sales Number</p>
+            <p className="text-xs text-muted-foreground">Antal salj</p>
             <p className="text-lg font-semibold">5,240</p>
           </div>
           <div className="rounded-xl border bg-muted/40 p-3 text-center">
-            <p className="text-xs text-muted-foreground">Total Revenue</p>
+            <p className="text-xs text-muted-foreground">Total omsattning</p>
             <p className="text-lg font-semibold">182,4k kr</p>
           </div>
         </div>

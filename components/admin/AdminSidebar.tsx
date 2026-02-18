@@ -137,7 +137,7 @@ export default function AdminSidebar({
       <Sheet open={mobileOpen} onOpenChange={onMobileOpenChange}>
         <SheetContent side="left" className="w-72 p-0">
           <SheetHeader className="sr-only">
-            <SheetTitle>Admin Navigation</SheetTitle>
+            <SheetTitle>Adminnavigering</SheetTitle>
           </SheetHeader>
           <SidebarContent
             adminName={adminName}
@@ -151,7 +151,7 @@ export default function AdminSidebar({
             onClick={() => onMobileOpenChange(false)}
           >
             <X className="h-4 w-4" />
-            <span className="sr-only">Close sidebar</span>
+            <span className="sr-only">Stang sidomeny</span>
           </Button>
         </SheetContent>
       </Sheet>

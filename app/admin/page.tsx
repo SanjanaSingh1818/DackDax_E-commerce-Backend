@@ -7,7 +7,8 @@ import OrdersTable from "@/components/admin/OrdersTable";
 import RevenueChart from "@/components/admin/RevenueChart";
 import SalesChart from "@/components/admin/SalesChart";
 import StatCard from "@/components/admin/StatCard";
-import TopMarkets from "@/components/admin/TopMarkets";
+import LowStockTyresCard from "@/components/admin/LowStockTyresCard";
+import MarginSettingsCard from "@/components/admin/MarginSettingsCard";
 import TopProducts from "@/components/admin/TopProducts";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatSEK } from "@/lib/currency";
@@ -28,7 +29,8 @@ function DashboardSkeleton() {
         <Skeleton className="h-[360px] rounded-xl" />
       </div>
       <Skeleton className="h-[340px] rounded-xl" />
-      <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
+        <Skeleton className="h-[280px] rounded-xl" />
         <Skeleton className="h-[280px] rounded-xl" />
         <Skeleton className="h-[280px] rounded-xl" />
       </div>
@@ -38,7 +40,8 @@ function DashboardSkeleton() {
 
 export default function AdminDashboardPage() {
   const [adminName, setAdminName] = useState("Admin");
-  const { loading, stats, orders, revenue, topTyres, topMarkets, loadDashboard } = useAdminDashboardStore();
+  const { loading, stats, orders, revenue, topTyres, lowStockTyres, margin, marginSaving, loadDashboard, updateMargin } =
+    useAdminDashboardStore();
 
   useEffect(() => {
     const userString = localStorage.getItem("user");
@@ -120,9 +123,10 @@ export default function AdminDashboardPage() {
         <OrdersTable rows={orders} />
       </section>
 
-      <section className="grid grid-cols-1 gap-4 xl:grid-cols-2">
+      <section className="grid grid-cols-1 gap-4 xl:grid-cols-3">
         <TopProducts items={topTyres} />
-        <TopMarkets items={topMarkets} />
+        <LowStockTyresCard items={lowStockTyres} />
+        <MarginSettingsCard margin={margin} saving={marginSaving} onSave={updateMargin} />
       </section>
     </div>
   );
