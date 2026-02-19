@@ -234,13 +234,13 @@ export default function AdminReportsPage() {
 
   const exportOrdersCsv = () => {
     const headers = [
-      "Order ID",
-      "Customer Name",
-      "Email",
-      "Customer Type",
-      "Total Amount",
+      "Ordernummer",
+      "Kundnamn",
+      "E-post",
+      "Kundtyp",
+      "Totalbelopp",
       "Status",
-      "Created Date",
+      "Skapad datum",
     ];
     const rows = filteredOrders.map((order) => [
       order.orderId || order.id || order._id || "",
@@ -255,7 +255,7 @@ export default function AdminReportsPage() {
   };
 
   const exportCustomersCsv = () => {
-    const headers = ["Name", "Email", "Phone", "Customer Type", "Total Orders", "Total Spent"];
+    const headers = ["Namn", "E-post", "Telefon", "Kundtyp", "Antal ordrar", "Totalt spenderat"];
     const rows = customerRows.map((customer) => [
       customer.name,
       customer.email,
@@ -268,7 +268,7 @@ export default function AdminReportsPage() {
   };
 
   const exportProductsCsv = () => {
-    const headers = ["Product Name", "Price", "Stock", "Category"];
+    const headers = ["Produktnamn", "Pris", "Lagersaldo", "Kategori"];
     const rows = products.map((product) => [
       product.title || product.name || "",
       Number(product.price) || 0,
@@ -279,12 +279,12 @@ export default function AdminReportsPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       <Card className="rounded-xl border-0 shadow-sm">
-        <CardHeader>
+        <CardHeader className="p-4 sm:p-6">
           <CardTitle>Rapporter</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-5">
+        <CardContent className="space-y-5 p-4 pt-0 sm:p-6 sm:pt-0">
           {loading ? (
             <div className="space-y-3">
               <Skeleton className="h-10 w-full" />
@@ -346,29 +346,29 @@ export default function AdminReportsPage() {
               <div className="grid grid-cols-1 gap-3 lg:grid-cols-3">
                 <Button
                   onClick={exportOrdersCsv}
-                  className="w-full justify-center rounded-lg"
+                  className="w-full justify-center rounded-lg px-3 text-sm"
                   disabled={filteredOrders.length === 0}
                 >
                   <Download className="mr-2 h-4 w-4" />
-                  Export Orders CSV
+                  Exportera ordrar CSV
                 </Button>
                 <Button
                   onClick={exportCustomersCsv}
-                  className="w-full justify-center rounded-lg"
+                  className="w-full justify-center rounded-lg px-3 text-sm"
                   variant="outline"
                   disabled={customerRows.length === 0}
                 >
                   <Download className="mr-2 h-4 w-4" />
-                  Export Customers CSV
+                  Exportera kunder CSV
                 </Button>
                 <Button
                   onClick={exportProductsCsv}
-                  className="w-full justify-center rounded-lg"
+                  className="w-full justify-center rounded-lg px-3 text-sm"
                   variant="secondary"
                   disabled={products.length === 0}
                 >
                   <Download className="mr-2 h-4 w-4" />
-                  Export Products CSV
+                  Exportera produkter CSV
                 </Button>
               </div>
             </>

@@ -12,14 +12,15 @@ export default function RevenueChart({ data }: { data: RevenuePoint[] }) {
       <CardHeader className="pb-2">
         <CardTitle className="text-base">Total vinstoversikt</CardTitle>
       </CardHeader>
-      <CardContent className="h-[320px]">
+      <CardContent className="h-[260px] sm:h-[320px]">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={data}>
             <CartesianGrid strokeDasharray="3 3" vertical={false} strokeOpacity={0.3} />
-            <XAxis dataKey="month" axisLine={false} tickLine={false} />
+            <XAxis dataKey="month" axisLine={false} tickLine={false} fontSize={12} />
             <YAxis
               axisLine={false}
               tickLine={false}
+              fontSize={12}
               tickFormatter={(value) => `${Math.round(Number(value) / 1000)}k`}
             />
             <Tooltip

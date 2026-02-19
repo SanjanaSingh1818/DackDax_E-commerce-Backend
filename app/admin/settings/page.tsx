@@ -39,6 +39,25 @@ export default function SettingsPage() {
     shipping: false,
   });
 
+  const syncAdminUserCache = (name: string, email: string) => {
+    const userString = localStorage.getItem("user");
+    if (!userString) return;
+
+    try {
+      const user = JSON.parse(userString) as Record<string, unknown>;
+      const nextUser = {
+        ...user,
+        name,
+        fullName: name,
+        email,
+      };
+      localStorage.setItem("user", JSON.stringify(nextUser));
+      window.dispatchEvent(new Event("admin-profile-updated"));
+    } catch {
+      // ignore malformed local user cache
+    }
+  };
+
   useEffect(() => {
     const load = async () => {
       try {
@@ -56,7 +75,7 @@ export default function SettingsPage() {
 
   if (loading) {
     return (
-      <div className="space-y-4">
+      <div className="space-y-4 sm:space-y-6">
         <Skeleton className="h-10 w-52 rounded-lg" />
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           <Skeleton className="h-[280px] rounded-xl" />
@@ -70,9 +89,9 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Installningar</h1>
+        <h1 className="text-xl font-semibold tracking-tight sm:text-2xl">Installningar</h1>
         <p className="text-sm text-muted-foreground">Hantera admin, butik, priser och frakt.</p>
       </div>
 
@@ -88,6 +107,7 @@ export default function SettingsPage() {
               setSaving((prev) => ({ ...prev, profile: true }));
               const data = await updateProfile(input);
               setSettings((prev) => ({ ...prev, profile: data }));
+              syncAdminUserCache(data.name || input.name, data.email || input.email);
               toast.success("Profil uppdaterad.");
             } catch (err: unknown) {
               toast.error(err instanceof Error ? err.message : "Kunde inte uppdatera profil.");

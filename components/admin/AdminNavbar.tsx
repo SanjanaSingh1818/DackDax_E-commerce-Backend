@@ -76,8 +76,8 @@ export default function AdminNavbar({
 
   return (
     <header className="sticky top-0 z-10 border-b bg-background/90 backdrop-blur">
-      <div className="flex h-16 items-center justify-between gap-3 px-4 lg:px-8">
-        <div className="flex items-center gap-3">
+      <div className="flex h-16 items-center justify-between gap-2 px-3 sm:gap-3 sm:px-4 lg:px-8">
+        <div className="flex min-w-0 items-center gap-2 sm:gap-3">
           <Button variant="outline" size="icon" className="rounded-xl lg:hidden" onClick={onMenuClick}>
             <Menu className="h-4 w-4" />
             <span className="sr-only">Oppna meny</span>
@@ -108,10 +108,20 @@ export default function AdminNavbar({
           </form>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5 sm:gap-2">
           <Button className="hidden rounded-xl md:inline-flex" onClick={() => setInviteOpen(true)}>
             <UserPlus className="mr-2 h-4 w-4" />
             Bjud in
+          </Button>
+
+          <Button
+            variant="outline"
+            size="icon"
+            className="rounded-xl md:hidden"
+            onClick={() => setInviteOpen(true)}
+          >
+            <UserPlus className="h-4 w-4" />
+            <span className="sr-only">Bjud in</span>
           </Button>
 
           <Button variant="outline" size="icon" className="relative rounded-xl">
@@ -130,13 +140,39 @@ export default function AdminNavbar({
             <span className="sr-only">Byt tema</span>
           </Button>
 
-          <div className="flex items-center gap-2 rounded-xl border bg-card px-2 py-1.5">
+          <div className="flex items-center gap-2 rounded-xl border bg-card px-1.5 py-1.5 sm:px-2">
             <Avatar className="h-8 w-8">
               <AvatarFallback>AD</AvatarFallback>
             </Avatar>
             <span className="hidden text-sm font-medium sm:block">{adminName}</span>
           </div>
         </div>
+      </div>
+
+      <div className="px-3 pb-2 md:hidden">
+        <form
+          className="relative"
+          onSubmit={(event) => {
+            event.preventDefault();
+            runSearch();
+          }}
+        >
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder="Sok dack, bestallningar, kunder..."
+            className="rounded-xl border bg-muted/30 pl-9 pr-14"
+          />
+          <Button
+            type="submit"
+            variant="ghost"
+            size="sm"
+            className="absolute right-1 top-1/2 h-8 -translate-y-1/2 rounded-lg"
+          >
+            Sok
+          </Button>
+        </form>
       </div>
 
       <Dialog open={inviteOpen} onOpenChange={setInviteOpen}>

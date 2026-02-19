@@ -74,7 +74,7 @@ export default function UploadPage(){
 
     if(!file){
 
-      setMessage("Please select a CSV file.")
+      setMessage("Valj en CSV-fil.")
       setError(true)
 
       return
@@ -91,7 +91,7 @@ export default function UploadPage(){
 
       if(!token){
 
-        throw new Error("Please login as admin.")
+        throw new Error("Logga in som admin.")
 
       }
 
@@ -123,7 +123,7 @@ export default function UploadPage(){
 
         const err = await res.text()
 
-        throw new Error(err || "Upload failed")
+        throw new Error(err || "Uppladdning misslyckades")
 
       }
 
@@ -131,7 +131,7 @@ export default function UploadPage(){
       const data = await res.json()
 
       setMessage(
-        `Upload successful. Inserted ${data.inserted ?? 0} products.`
+        `Uppladdning klar. ${data.inserted ?? 0} produkter importerades.`
       )
 
       setFile(null)
@@ -139,7 +139,7 @@ export default function UploadPage(){
     }
     catch(err:any){
 
-      setMessage(err.message || "Upload failed")
+      setMessage(err.message || "Uppladdning misslyckades")
       setError(true)
 
     }
@@ -177,16 +177,16 @@ export default function UploadPage(){
 
   return(
 
-    <div className="max-w-2xl">
+    <div className="w-full max-w-2xl">
 
-      <h1 className="text-2xl font-bold mb-6">
-        CSV Upload
+      <h1 className="mb-4 text-xl font-bold sm:mb-6 sm:text-2xl">
+        CSV-uppladdning
       </h1>
 
 
       {/* Card */}
 
-      <div className="bg-white rounded-xl shadow border p-6">
+      <div className="rounded-xl border bg-white p-4 shadow sm:p-6">
 
 
         {/* Drop Area */}
@@ -204,7 +204,7 @@ export default function UploadPage(){
             className="
               border-2 border-dashed
               rounded-lg
-              p-8
+              p-5 sm:p-8
               text-center
               cursor-pointer
               hover:border-[#D4AF37]
@@ -216,11 +216,11 @@ export default function UploadPage(){
             <Upload className="mx-auto mb-3 text-gray-400" size={32}/>
 
             <div className="font-medium">
-              Click or drag CSV file here
+              Klicka eller dra CSV-fil hit
             </div>
 
             <div className="text-sm text-gray-500">
-              Supported format: .csv
+              Stott format: .csv
             </div>
 
             <input
@@ -241,7 +241,7 @@ export default function UploadPage(){
 
         {file && (
 
-          <div className="border rounded-lg p-4 flex items-center justify-between">
+          <div className="flex flex-col gap-3 rounded-lg border p-4 sm:flex-row sm:items-center sm:justify-between">
 
             <div className="flex items-center gap-3">
 
@@ -295,7 +295,7 @@ export default function UploadPage(){
 
         >
 
-          {loading ? "Uploading..." : "Upload CSV"}
+          {loading ? "Laddar upp..." : "Ladda upp CSV"}
 
         </Button>
 

@@ -68,11 +68,11 @@ export default function AdminDashboardPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <section className="rounded-xl border border-slate-200 bg-gradient-to-r from-teal-700 to-cyan-700 p-6 text-white shadow-sm">
-        <h1 className="text-2xl font-semibold tracking-tight md:text-3xl">Valkommen tillbaka, {adminName}</h1>
+    <div className="space-y-4 sm:space-y-6">
+      <section className="rounded-xl border border-slate-200 bg-gradient-to-r from-teal-700 to-cyan-700 p-4 text-white shadow-sm sm:p-6">
+        <h1 className="text-xl font-semibold tracking-tight sm:text-2xl md:text-3xl">Valkommen tillbaka, {adminName}</h1>
         <p className="mt-1 text-sm text-white/90">{formattedDate}</p>
-        <p className="mt-3 text-sm text-white/80">
+        <p className="mt-2 text-sm text-white/80 sm:mt-3">
           Har ar en snabb oversikt av DackDax senaste resultat.
         </p>
       </section>
@@ -101,7 +101,7 @@ export default function AdminDashboardPage() {
         />
         <StatCard
           title="Totalt salda dack"
-          value={stats.totalOrders.toLocaleString("sv-SE")}
+          value={stats.totalTyresSold.toLocaleString("sv-SE")}
           growth={stats.tyresGrowth}
           icon={ShoppingBag}
           indicatorClassName="bg-orange-500"

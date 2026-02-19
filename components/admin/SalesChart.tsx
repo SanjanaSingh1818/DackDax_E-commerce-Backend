@@ -27,8 +27,8 @@ export default function SalesChart({
       <CardHeader className="pb-2">
         <CardTitle className="text-base">Saljprestanda</CardTitle>
       </CardHeader>
-      <CardContent>
-        <div className="mx-auto h-56 w-full max-w-[260px]">
+      <CardContent className="p-4 sm:p-6">
+        <div className="mx-auto h-52 w-full max-w-[240px] sm:h-56 sm:max-w-[260px]">
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
               <Pie
@@ -49,12 +49,12 @@ export default function SalesChart({
           </ResponsiveContainer>
         </div>
 
-        <div className="-mt-20 text-center">
-          <p className="text-3xl font-semibold">{safePercentage.toFixed(0)}%</p>
+        <div className="-mt-16 text-center sm:-mt-20">
+          <p className="text-2xl font-semibold sm:text-3xl">{safePercentage.toFixed(0)}%</p>
           <p className="text-sm text-muted-foreground">Andel uppnadd malniva</p>
         </div>
 
-        <div className="mt-10 grid grid-cols-2 gap-3">
+        <div className="mt-8 grid grid-cols-1 gap-3 sm:mt-10 sm:grid-cols-2">
           <div className="rounded-xl border bg-muted/30 p-3 text-center">
             <p className="text-xs text-muted-foreground">Totalt antal salj</p>
             <p className="text-lg font-semibold">{totalSales.toLocaleString("sv-SE")}</p>

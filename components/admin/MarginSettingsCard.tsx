@@ -32,12 +32,12 @@ export default function MarginSettingsCard({
   return (
     <Card className="rounded-xl border-0 shadow-sm">
       <CardHeader className="pb-2">
-        <CardTitle className="text-base">Marginalinställningar</CardTitle>
+        <CardTitle className="text-base">Marginalinstallningar</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         <div>
           <p className="text-sm font-medium text-muted-foreground">Standardmarginal (%)</p>
-          <p className="text-xs text-muted-foreground">Används för nya produktberäkningar.</p>
+          <p className="text-xs text-muted-foreground">Anvands for nya produktberakningar.</p>
         </div>
 
         <div className="relative">
@@ -51,7 +51,7 @@ export default function MarginSettingsCard({
           />
         </div>
 
-        <Button onClick={handleSave} disabled={saving} className="rounded-lg">
+        <Button onClick={handleSave} disabled={saving} className="w-full rounded-lg sm:w-auto">
           {saving ? "Sparar..." : "Spara marginal"}
         </Button>
 

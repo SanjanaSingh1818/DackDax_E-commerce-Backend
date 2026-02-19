@@ -33,7 +33,7 @@ export default function ShippingSettingsCard({
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="space-y-2">
-          <Label htmlFor="shipping-threshold">Free Shipping Threshold</Label>
+          <Label htmlFor="shipping-threshold">Grans for fri frakt</Label>
           <Input
             id="shipping-threshold"
             type="number"
@@ -44,7 +44,7 @@ export default function ShippingSettingsCard({
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="shipping-days">Delivery Days</Label>
+          <Label htmlFor="shipping-days">Leveransdagar</Label>
           <Input
             id="shipping-days"
             type="number"
@@ -55,7 +55,7 @@ export default function ShippingSettingsCard({
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="shipping-cost">Shipping Cost</Label>
+          <Label htmlFor="shipping-cost">Fraktkostnad</Label>
           <Input
             id="shipping-cost"
             type="number"
@@ -65,8 +65,8 @@ export default function ShippingSettingsCard({
             }
           />
         </div>
-        <Button disabled={saving} onClick={() => onSave(values)}>
-          {saving ? "Sparar..." : "Save Shipping"}
+        <Button className="w-full sm:w-auto" disabled={saving} onClick={() => onSave(values)}>
+          {saving ? "Sparar..." : "Spara fraktinstallningar"}
         </Button>
       </CardContent>
     </Card>

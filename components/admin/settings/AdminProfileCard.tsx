@@ -31,16 +31,16 @@ export default function AdminProfileCard({
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="space-y-2">
-          <Label htmlFor="settings-name">Name</Label>
+          <Label htmlFor="settings-name">Namn</Label>
           <Input
             id="settings-name"
             value={name}
             onChange={(event) => setName(event.target.value)}
-            placeholder="Admin Name"
+            placeholder="Adminnamn"
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="settings-email">Email</Label>
+          <Label htmlFor="settings-email">E-post</Label>
           <Input
             id="settings-email"
             type="email"
@@ -49,8 +49,8 @@ export default function AdminProfileCard({
             placeholder="admin@dackdax.se"
           />
         </div>
-        <Button disabled={saving} onClick={() => onSave({ name, email })}>
-          {saving ? "Sparar..." : "Update Profile"}
+        <Button className="w-full sm:w-auto" disabled={saving} onClick={() => onSave({ name, email })}>
+          {saving ? "Sparar..." : "Uppdatera profil"}
         </Button>
       </CardContent>
     </Card>

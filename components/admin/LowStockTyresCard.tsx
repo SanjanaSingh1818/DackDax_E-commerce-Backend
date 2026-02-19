@@ -21,10 +21,10 @@ export default function LowStockTyresCard({ items }: { items: LowStockTyre[] }) 
           items.map((item) => (
             <div
               key={item.id}
-              className="flex items-center justify-between rounded-xl border bg-muted/30 px-4 py-3"
+              className="flex flex-wrap items-center justify-between gap-2 rounded-xl border bg-muted/30 px-4 py-3"
             >
-              <div>
-                <p className="text-sm font-medium">{item.name}</p>
+              <div className="min-w-0">
+                <p className="truncate text-sm font-medium">{item.name}</p>
                 <p className="text-xs text-muted-foreground">Grans: {item.threshold} st</p>
               </div>
               <p className="text-sm font-semibold text-orange-600">{item.stock} kvar</p>

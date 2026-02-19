@@ -34,7 +34,7 @@ export default function StoreSettingsCard({
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="space-y-2">
-          <Label htmlFor="store-name">Store Name</Label>
+          <Label htmlFor="store-name">Butiksnamn</Label>
           <Input
             id="store-name"
             value={values.storeName}
@@ -42,7 +42,7 @@ export default function StoreSettingsCard({
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="store-email">Store Email</Label>
+          <Label htmlFor="store-email">Butikens e-post</Label>
           <Input
             id="store-email"
             value={values.storeEmail}
@@ -50,7 +50,7 @@ export default function StoreSettingsCard({
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="store-phone">Store Phone</Label>
+          <Label htmlFor="store-phone">Butikens telefon</Label>
           <Input
             id="store-phone"
             value={values.storePhone}
@@ -58,15 +58,15 @@ export default function StoreSettingsCard({
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="store-address">Store Address</Label>
+          <Label htmlFor="store-address">Butiksadress</Label>
           <Input
             id="store-address"
             value={values.storeAddress}
             onChange={(event) => setValues((prev) => ({ ...prev, storeAddress: event.target.value }))}
           />
         </div>
-        <Button disabled={saving} onClick={() => onSave(values)}>
-          {saving ? "Sparar..." : "Save Store Settings"}
+        <Button className="w-full sm:w-auto" disabled={saving} onClick={() => onSave(values)}>
+          {saving ? "Sparar..." : "Spara butiksinstallningar"}
         </Button>
       </CardContent>
     </Card>

@@ -144,19 +144,19 @@ export default function AdminCustomersPage() {
 
   return (
     <Card className="rounded-xl border-0 shadow-sm">
-      <CardHeader className="space-y-4">
+      <CardHeader className="space-y-4 p-4 sm:p-6">
         <CardTitle>Kunder</CardTitle>
         <div className="flex flex-col gap-3 sm:flex-row">
           <Input
             placeholder="Sok namn eller e-post..."
             value={search}
             onChange={(event) => setSearch(event.target.value)}
-            className="sm:max-w-sm"
+            className="w-full sm:max-w-sm"
           />
           <select
             value={typeFilter}
             onChange={(event) => setTypeFilter(event.target.value as "all" | "public" | "private")}
-            className="h-10 rounded-md border border-input bg-background px-3 text-sm sm:w-[180px]"
+            className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm sm:w-[180px]"
           >
             <option value="all">Alla</option>
             <option value="public">Foretag</option>
@@ -165,7 +165,7 @@ export default function AdminCustomersPage() {
         </div>
       </CardHeader>
 
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-4 p-4 pt-0 sm:p-6 sm:pt-0">
         {loading ? (
           <div className="space-y-3">
             <Skeleton className="h-10 w-full" />
@@ -179,7 +179,7 @@ export default function AdminCustomersPage() {
         ) : (
           <>
             <div className="overflow-x-auto">
-              <Table>
+              <Table className="min-w-[860px]">
                 <TableHeader>
                   <TableRow>
                     <TableHead>Namn</TableHead>
@@ -202,9 +202,9 @@ export default function AdminCustomersPage() {
                   ) : (
                     pageRows.map((row) => (
                       <TableRow key={row.email}>
-                        <TableCell className="font-medium">{row.name}</TableCell>
-                        <TableCell>{row.email}</TableCell>
-                        <TableCell>{row.phone}</TableCell>
+                        <TableCell className="max-w-[180px] truncate font-medium">{row.name}</TableCell>
+                        <TableCell className="max-w-[220px] truncate">{row.email}</TableCell>
+                        <TableCell className="max-w-[140px] truncate">{row.phone}</TableCell>
                         <TableCell>
                           <Badge
                             className={
@@ -237,7 +237,7 @@ export default function AdminCustomersPage() {
               </Table>
             </div>
 
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <p className="text-sm text-muted-foreground">
                 Sida {page} av {totalPages} ({filteredRows.length} kunder)
               </p>

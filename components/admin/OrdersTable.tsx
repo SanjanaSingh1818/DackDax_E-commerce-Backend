@@ -98,7 +98,7 @@ export default function OrdersTable({ rows }: { rows: AdminOrder[] }) {
         <CardTitle className="text-base">Bestallningar & Fakturor</CardTitle>
       </CardHeader>
       <CardContent className="overflow-x-auto">
-        <Table>
+        <Table className="min-w-[760px]">
           <TableHeader>
             <TableRow>
               <TableHead>Ordernummer</TableHead>
@@ -120,8 +120,8 @@ export default function OrdersTable({ rows }: { rows: AdminOrder[] }) {
             ) : (
               rows.map((order) => (
                 <TableRow key={order.orderId}>
-                  <TableCell className="font-medium">{order.orderId}</TableCell>
-                  <TableCell>{order.customerName}</TableCell>
+                  <TableCell className="max-w-[160px] truncate font-medium">{order.orderId}</TableCell>
+                  <TableCell className="max-w-[180px] truncate">{order.customerName}</TableCell>
                   <TableCell>
                     <Badge variant="outline">
                       {customerTypeLabelMap[order.customerType || "privat"]}
@@ -141,8 +141,8 @@ export default function OrdersTable({ rows }: { rows: AdminOrder[] }) {
                       className="rounded-lg"
                       onClick={() => downloadInvoice(order)}
                     >
-                      <FileDown className="mr-2 h-4 w-4" />
-                      Ladda ner
+                      <FileDown className="h-4 w-4 sm:mr-2" />
+                      <span className="hidden sm:inline">Ladda ner</span>
                     </Button>
                   </TableCell>
                 </TableRow>

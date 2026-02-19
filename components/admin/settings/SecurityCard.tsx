@@ -24,7 +24,7 @@ export default function SecurityCard({
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="space-y-2">
-          <Label htmlFor="settings-current-password">Current Password</Label>
+          <Label htmlFor="settings-current-password">Nuvarande losenord</Label>
           <Input
             id="settings-current-password"
             type="password"
@@ -33,7 +33,7 @@ export default function SecurityCard({
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="settings-new-password">New Password</Label>
+          <Label htmlFor="settings-new-password">Nytt losenord</Label>
           <Input
             id="settings-new-password"
             type="password"
@@ -42,10 +42,11 @@ export default function SecurityCard({
           />
         </div>
         <Button
+          className="w-full sm:w-auto"
           disabled={saving}
           onClick={() => onSave({ currentPassword, newPassword })}
         >
-          {saving ? "Sparar..." : "Change Password"}
+          {saving ? "Sparar..." : "Andra losenord"}
         </Button>
       </CardContent>
     </Card>

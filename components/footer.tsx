@@ -77,9 +77,18 @@ export function Footer(){
           {/* Brand */}
           <div>
 
-            <Link href="/" className="text-2xl font-black text-white">
-              DACK<span className="text-[#D4AF37]">DAX</span>
-            </Link>
+          <Link href="/" className="flex items-center gap-2">
+  
+  <Image
+    src="/logo-removebg.png"
+    alt="DackDax Logo"
+    width={120}
+    height={80}
+    className="object-contain"
+  />
+
+
+</Link>
 
             <p className="mt-3 text-sm">
               Premium däck och fälgar med snabb leverans och trygg betalning.

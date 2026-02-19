@@ -149,7 +149,7 @@ export function getAverageOrderValue(orders: RawOrder[]) {
 
 function LoadingState() {
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <Skeleton className="h-28 rounded-xl" />
         <Skeleton className="h-28 rounded-xl" />
@@ -157,12 +157,12 @@ function LoadingState() {
         <Skeleton className="h-28 rounded-xl" />
       </div>
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
-        <Skeleton className="h-[320px] rounded-xl" />
-        <Skeleton className="h-[320px] rounded-xl" />
+        <Skeleton className="h-[260px] rounded-xl sm:h-[320px]" />
+        <Skeleton className="h-[260px] rounded-xl sm:h-[320px]" />
       </div>
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
-        <Skeleton className="h-[320px] rounded-xl" />
-        <Skeleton className="h-[320px] rounded-xl" />
+        <Skeleton className="h-[260px] rounded-xl sm:h-[320px]" />
+        <Skeleton className="h-[260px] rounded-xl sm:h-[320px]" />
       </div>
     </div>
   );
@@ -227,10 +227,10 @@ export default function AdminAnalyticsPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="space-y-4 sm:space-y-6">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <h1 className="text-2xl font-semibold tracking-tight">Analys</h1>
-        <Badge variant="outline">Live orderdata</Badge>
+        <Badge variant="outline">Direkt orderdata</Badge>
       </div>
 
       {error ? (
@@ -277,12 +277,12 @@ export default function AdminAnalyticsPage() {
           <CardHeader>
             <CardTitle className="text-base">Manadsomsattning</CardTitle>
           </CardHeader>
-          <CardContent className="h-[300px]">
+          <CardContent className="h-[250px] sm:h-[300px]">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={analytics.monthlyRevenue}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} strokeOpacity={0.2} />
-                <XAxis dataKey="month" />
-                <YAxis />
+                <XAxis dataKey="month" fontSize={12} />
+                <YAxis fontSize={12} />
                 <Tooltip />
                 <Bar dataKey="value" fill="#0f766e" radius={[8, 8, 0, 0]} />
               </BarChart>
@@ -294,12 +294,12 @@ export default function AdminAnalyticsPage() {
           <CardHeader>
             <CardTitle className="text-base">Bestallningar per manad</CardTitle>
           </CardHeader>
-          <CardContent className="h-[300px]">
+          <CardContent className="h-[250px] sm:h-[300px]">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={analytics.monthlyOrders}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} strokeOpacity={0.2} />
-                <XAxis dataKey="month" />
-                <YAxis />
+                <XAxis dataKey="month" fontSize={12} />
+                <YAxis fontSize={12} />
                 <Tooltip />
                 <Line type="monotone" dataKey="value" stroke="#2563eb" strokeWidth={3} dot={false} />
               </LineChart>
@@ -313,12 +313,12 @@ export default function AdminAnalyticsPage() {
           <CardHeader>
             <CardTitle className="text-base">Kundtillvaxt</CardTitle>
           </CardHeader>
-          <CardContent className="h-[300px]">
+          <CardContent className="h-[250px] sm:h-[300px]">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={analytics.customerGrowth}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} strokeOpacity={0.2} />
-                <XAxis dataKey="month" />
-                <YAxis />
+                <XAxis dataKey="month" fontSize={12} />
+                <YAxis fontSize={12} />
                 <Tooltip />
                 <Line type="monotone" dataKey="value" stroke="#7c3aed" strokeWidth={3} dot={false} />
               </LineChart>
@@ -330,12 +330,12 @@ export default function AdminAnalyticsPage() {
           <CardHeader>
             <CardTitle className="text-base">Mest salda dack</CardTitle>
           </CardHeader>
-          <CardContent className="h-[300px]">
+          <CardContent className="h-[250px] sm:h-[300px]">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={analytics.topProducts}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} strokeOpacity={0.2} />
-                <XAxis dataKey="productId" />
-                <YAxis />
+                <XAxis dataKey="productId" fontSize={12} />
+                <YAxis fontSize={12} />
                 <Tooltip />
                 <Bar dataKey="quantity" fill="#ea580c" radius={[8, 8, 0, 0]} />
               </BarChart>

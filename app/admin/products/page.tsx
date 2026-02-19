@@ -116,7 +116,7 @@ export default function AdminProductsPage() {
       resetForm();
       await loadProducts();
     } catch (err: unknown) {
-      alert(err instanceof Error ? err.message : "Failed to save product.");
+      alert(err instanceof Error ? err.message : "Kunde inte spara produkt.");
     }
   }
 
@@ -145,7 +145,7 @@ export default function AdminProductsPage() {
   }
 
   async function handleDelete(id: string) {
-    if (!confirm("Delete product?")) return;
+    if (!confirm("Ta bort produkten?")) return;
     await productAPI.delete(id, token || "");
     await loadProducts();
   }
@@ -160,7 +160,7 @@ export default function AdminProductsPage() {
       await productAPI.update(product._id, { stock: next }, token || "");
       setProducts((prev) => prev.map((item) => (item._id === product._id ? { ...item, stock: next } : item)));
     } catch (err: unknown) {
-      alert(err instanceof Error ? err.message : "Failed to update stock.");
+      alert(err instanceof Error ? err.message : "Kunde inte uppdatera lagersaldo.");
     } finally {
       setUpdatingStockId(null);
     }
@@ -172,10 +172,10 @@ export default function AdminProductsPage() {
   }
 
   return (
-    <div>
-      <h1 className="mb-6 text-2xl font-bold">Product Management</h1>
+    <div className="space-y-4 sm:space-y-6">
+      <h1 className="text-xl font-bold sm:text-2xl">Produkthantering</h1>
 
-      <div className="mb-6 grid grid-cols-3 gap-3 rounded-xl bg-white p-4 shadow">
+      <div className="grid grid-cols-1 gap-3 rounded-xl bg-white p-3 shadow sm:grid-cols-2 sm:p-4 lg:grid-cols-3">
         {formKeys.map((key) => (
           <Input
             key={key}
@@ -185,19 +185,22 @@ export default function AdminProductsPage() {
           />
         ))}
 
-        <Button onClick={handleSubmit} className="col-span-3">
-          {editingId ? "Update Product" : "Create Product"}
+        <Button onClick={handleSubmit} className="w-full sm:col-span-2 lg:col-span-3">
+          {editingId ? "Uppdatera produkt" : "Skapa produkt"}
         </Button>
       </div>
 
-      <div className="rounded-xl bg-white shadow">
+      <div className="overflow-x-auto rounded-xl bg-white shadow">
         {products.map((product) => {
           const stock = Number(product.stock) || 0;
           const stockBusy = updatingStockId === product._id;
 
           return (
-            <div key={product._id} className="flex items-center justify-between border-b p-3">
-              <div className="flex items-center gap-3">
+            <div
+              key={product._id}
+              className="flex min-w-[760px] items-center justify-between gap-4 border-b p-3"
+            >
+              <div className="flex min-w-[250px] items-center gap-3">
                 <img src={product.image} className="h-12 w-12" />
                 <div>
                   <div className="font-semibold">
@@ -207,9 +210,9 @@ export default function AdminProductsPage() {
                 </div>
               </div>
 
-              <div>{product.price} kr</div>
+              <div className="min-w-[90px] text-sm font-medium">{product.price} kr</div>
 
-              <div className="flex items-center gap-2">
+              <div className="flex min-w-[120px] items-center gap-2">
                 <Button
                   size="sm"
                   variant="outline"
@@ -229,10 +232,10 @@ export default function AdminProductsPage() {
                 </Button>
               </div>
 
-              <div className="flex gap-2">
-                <Button onClick={() => handleEdit(product)}>Edit</Button>
+              <div className="flex min-w-[140px] gap-2">
+                <Button onClick={() => handleEdit(product)}>Redigera</Button>
                 <Button variant="destructive" onClick={() => void handleDelete(product._id)}>
-                  Delete
+                  Ta bort
                 </Button>
               </div>
             </div>

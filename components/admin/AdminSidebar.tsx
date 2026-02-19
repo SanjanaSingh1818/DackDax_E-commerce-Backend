@@ -35,7 +35,7 @@ const sidebarItems: SidebarItem[] = [
   { label: "Kunder", href: "/admin/customers", icon: Users },
   { label: "Analys", href: "/admin/analytics", icon: BarChart3 },
   { label: "Rapporter", href: "/admin/reports", icon: FileText },
-  { label: "CSV Upload", href: "/admin/upload", icon: Upload },
+  { label: "CSV-uppladdning", href: "/admin/upload", icon: Upload },
   { label: "Installningar", href: "/admin/settings", icon: Settings },
   { label: "Logga ut", icon: LogOut, isLogout: true },
 ];
@@ -61,11 +61,17 @@ function SidebarContent({
 
   return (
     <div className="flex h-full flex-col border-r bg-card">
-      <div className="border-b px-5 py-6">
+      <div className="border-b px-4 py-5 sm:px-5 sm:py-6">
         <div className="flex items-center gap-3">
-          <img src="/logo.png" alt="DackDax" className="h-12 w-12 rounded-xl object-contain bg-muted p-1" />
+          <Link href="/" className="flex items-center">
+  <img
+    src="/logo-circle.png"
+    alt="DackDax"
+    className="h-16 w-16 rounded-xl object-contain bg-muted p-1 cursor-pointer"
+  />
+</Link>
           <div>
-            <p className="text-sm font-semibold tracking-tight">DackDax</p>
+            <p className="text-xl font-semibold tracking-tight">DackDax</p>
             <p className="text-xs text-muted-foreground">Adminpanel</p>
           </div>
         </div>
@@ -80,7 +86,7 @@ function SidebarContent({
         </div>
       </div>
 
-      <nav className="flex-1 space-y-1 p-3">
+      <nav className="flex-1 space-y-1 p-2.5 sm:p-3">
         {sidebarItems.map((item) => {
           if (item.isLogout) {
             return (
@@ -137,7 +143,7 @@ export default function AdminSidebar({
       </aside>
 
       <Sheet open={mobileOpen} onOpenChange={onMobileOpenChange}>
-        <SheetContent side="left" className="w-72 p-0">
+        <SheetContent side="left" className="w-[85vw] max-w-72 p-0">
           <SheetHeader className="sr-only">
             <SheetTitle>Adminnavigering</SheetTitle>
           </SheetHeader>

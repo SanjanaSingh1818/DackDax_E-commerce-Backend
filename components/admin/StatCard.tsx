@@ -19,17 +19,17 @@ export default function StatCard({
 
   return (
     <Card className="rounded-xl border-0 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
-      <CardContent className="p-5">
+      <CardContent className="p-4 sm:p-5">
         <div className="mb-4 flex items-center justify-between">
           <div className="space-y-1">
             <p className="text-sm text-muted-foreground">{title}</p>
-            <p className="text-2xl font-semibold tracking-tight">{value}</p>
+            <p className="break-words text-xl font-semibold tracking-tight sm:text-2xl">{value}</p>
           </div>
           <div className="rounded-xl bg-muted p-2.5">
             <Icon className="h-4 w-4 text-foreground" />
           </div>
         </div>
-        <div className="flex items-center gap-2 text-sm">
+        <div className="flex flex-wrap items-center gap-2 text-sm">
           <span className={`h-2.5 w-2.5 rounded-full ${indicatorClassName}`} />
           <span className={positive ? "text-emerald-600" : "text-rose-600"}>
             {positive ? <ArrowUpRight className="mr-1 inline h-4 w-4" /> : <ArrowDownRight className="mr-1 inline h-4 w-4" />}

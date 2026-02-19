@@ -32,7 +32,7 @@ export default function PricingSettingsCard({
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="space-y-2">
-          <Label htmlFor="pricing-margin">Default Margin %</Label>
+          <Label htmlFor="pricing-margin">Standardmarginal %</Label>
           <Input
             id="pricing-margin"
             type="number"
@@ -43,7 +43,7 @@ export default function PricingSettingsCard({
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="pricing-vat">VAT %</Label>
+          <Label htmlFor="pricing-vat">Moms %</Label>
           <Input
             id="pricing-vat"
             type="number"
@@ -51,8 +51,8 @@ export default function PricingSettingsCard({
             onChange={(event) => setValues((prev) => ({ ...prev, vat: Number(event.target.value) || 0 }))}
           />
         </div>
-        <Button disabled={saving} onClick={() => onSave(values)}>
-          {saving ? "Sparar..." : "Save Pricing"}
+        <Button className="w-full sm:w-auto" disabled={saving} onClick={() => onSave(values)}>
+          {saving ? "Sparar..." : "Spara prisinstallningar"}
         </Button>
       </CardContent>
     </Card>
